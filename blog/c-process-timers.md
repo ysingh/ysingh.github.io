@@ -82,7 +82,6 @@ Values for ```clockid_t```
 5. CLOCK_MONOTONIC_RAW - nonsettable clock similar to CLOCK_MONOTONIC  but gives access to pure hardware time unaffected by NTP > Linux 2.6.28
 6. CLOCK_REALTIME_COARSE  similar to CLOCK_REALTIME - but obtain minimal cost lower resolution timestamps
 7. CLOCK_MONOTONIC_COARSE - similar to CLOCK_MONOTONIC - but at minimal cost but lower resolution
-8. 
 
 ## INTEL __rdtsc() intrinsic
 On linux
