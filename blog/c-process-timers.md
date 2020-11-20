@@ -1,4 +1,6 @@
-# Timing Process in C
+--------------------
+Timing Process in C
+---------------------
 
 ## Process Time - CPU time used by a process since it was created. 
 Can be seen as a sum of :
