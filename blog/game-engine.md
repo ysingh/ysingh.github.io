@@ -22,4 +22,39 @@ DLL files take the idea of libraries one step further. It seems wasteful to have
 
 
 ## Game Loop
+Basic Loop
+
+Process Input
+Update Game simulation
+Render
+
+# OOP Design
+
+### Game.cpp
+Initialize()
+Run() -> Has the game loop
+Destroy() -> Do we really need to destroy, shouldn't the OS take care of this?
+
+https://gafferongames.com/post/fix_your_timestep/
+https://archive.org/details/GDC2015Fiedler
+https://www.youtube.com/watch?v=fdAOPHgW7qM
+https://www.youtube.com/watch?v=pctGOMDW-HQ
+https://www.youtube.com/watch?v=jTzIDmjkLQo
+
+
+- dont tie physics simulation to frame rate
+- simulate physics and keep speed of render separate
+- delta time seconds elapsed since last frame
+- Can have either constant delta time eg: cap the frame rate at 60 fps or monitor refresh rate and set that as the simulation time step to a constant eg: 16 ms since thats the time every frame takes.
+- variable delta time: game runs independent of fps but not deterministic.
+
+- When we are running our physics at any timestep we are basically sampling the actual behavior.
+For example if we run at 60 fps our physics will run every 16 ms. So we will have a set of values like this
+[a, b, c, d, e]
+where a will be the physics approximation on the first sample (frame 0)
+b will be the approximation at 16ms (frame 1)
+c will be the approximation at 32ms (frame 2)
+
+Problem with this is if the frame rate is low our physics samples we be more spread out and more inexact.
+Eg: if we have a bullet going in a straight line and a thin wall, if our physics samples are too far apart the bullet will go through the wall, since we won't see the position where the bullet collided with the wall. This is called "Tunneling"
 
