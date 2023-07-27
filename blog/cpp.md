@@ -60,3 +60,31 @@ Game::Game() {
 - fancy C++ people like to use .hpp as the extension for their header files
 - static_cast - cast with compile type checking
 - constexpr is also a way to declare a constant but it's a compile time constant whereas const may be compile or run time const
+
+
+## Creating object on the stack vs heap
+
+void fn() {
+    // Created on the stack
+    // constructor called
+    Game game;
+
+    game.Run()
+    // Automatically popped from the stack at the end of this functions scope
+    // Like all stack objects the lifetime of this object is tied to the scope of this function
+    // destructor called when going out of scope
+}
+
+void fn() {
+    // Created on the heap using the new keyword
+    // new = allocation + initialization (calling the constructor of the object)
+    // new = malloc + call to constructor
+    Game game = new Game()
+
+    // Have to explicitly free memory by calling delete
+    // delete also runs the destructor and frees the memory
+    // delete = free + call to destructor
+    delete game
+
+    // if scope ends the object is still alive but no reference to it is so memory leak??
+}
