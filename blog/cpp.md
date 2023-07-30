@@ -1,5 +1,11 @@
 # C++ Notes
 
+Resource:
+https://www.learncpp.com/
+
+- only include those files in headers that are needed by it. Do not include things needed by the .cpp implementation by the headers
+
+
 Classes
  class ClassName {
     int ssn; // private by default can also give a private access specifier
@@ -88,3 +94,65 @@ void fn() {
 
     // if scope ends the object is still alive but no reference to it is so memory leak??
 }
+
+## Operator Overloading
+
+
+## Generics and Templates
+c++ template functions: - implement in header file
+
+Templates: just a placeholder for an actual function or class that the compiler will generate for us
+depending on the types we use.
+
+if we have a template class it is just a placeholder for actual classes that our compiler will generate.
+
+
+## IN CPP creating an object with new creates it on the heap and returns a reference to it
+
+## SMART POINTERS
+Different kind of smart pointers
+
+unique_ptr
+shared_ptr
+weak_ptr
+...
+
+### UNIQUE PTR
+If we know we will only have one reference(pointer) to an object 
+basically if we don't change ownership
+#include <memory>
+
+Eg:
+// old way
+void myFunc(void) {
+    Enemy* e = new Enemy();
+
+
+    // oops forgot to free. Memory leak
+}
+
+// with a unique smart pointer
+#include <memory>
+
+void myFunc(void) {
+    std::unique_ptr<Enemy> e = std::make_unique<Enemy>()
+    enemy2 = e // Not allowed
+    e->Jump;
+
+// This pointer goes out of scope when this function goes of of scope and it destroyed automatically
+// Really it gets destroyed when the "owner" of this pointer goes out of scope
+}
+
+
+### SHARED_PTR
+
+void myFunc(void) {
+    std::shared_ptr<Enemy> e = std::make_shared<Enemy>();
+    e2 = e // Allowed
+
+    e->Jump
+}
+ Can share ownership
+ Multiple shared_ptr references can reference the same resource
+ As soon as the last smart pointer owning the resource goes out of scope, the object is destroyed
+ uses reference counts
