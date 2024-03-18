@@ -1,10 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap');
-body { font-size: 16px; line-height: 1.6rem; font-family: 'Roboto Mono', sans-serif; margin-right: 4rem; margin-left: 4rem; margin-top: 2rem; background-color: rgba(23, 61, 84, 33); color: rgba(255, 244, 216, 100) }
-h1,  h2,  h3,  h4, ol, ul { margin-top: 0; margin-bottom: 0; padding: 0; }
-ul li, ol li { list-style-type: none; }
-section { margin-bottom: 1rem; }
+body { font-size: 16px; line-height: 1.6rem; font-family: 'Roboto Mono', sans-serif; margin-right: 4rem; margin-left: 4rem; margin-top: 2rem; 
 main { padding: 2rem; }
-h2, h3, h4 { margin-top: .5rem; }
-footer { margin-top: 2rem; margin-bottom: 2rem; margin-left: 4rem; margin-right: 4rem; }
-a { all: inherit; color: rgb(175, 175, 175) }
-footer a { display: inline; }
+
