@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap');
-body { font-size: 16px; line-height: 1.6rem; font-family: 'Roboto Mono', sans-serif; margin-right: 4rem; margin-left: 4rem; margin-top: 2rem; 
+body { font-size: 16px; line-height: 1.4; font-family: 'Roboto Mono', sans-serif; margin-right: 4rem; margin-left: 4rem; margin-top: 2rem; background: #EEEEEE; max-width: 650px;  color: #444;} 
 main { padding: 2rem; }
+h1, h2, h3 { line-height: 1.2;}
 
