@@ -103,12 +103,12 @@ or (something like)
      - circuit goes like this - 1 set squat,5 min rest, 1 set bench, 5 min rest, 1 set kettlebell swings, 5 min rest, 1 set overhead press, 5 mins rest, 1 set row, 5 mins rest. Start over until youve done 3 steps
      - The next week we will increase to 3 x 20 , the week after we will increase to 3 x 30 denoted above by (3 x 10)/ (3 x 20)/.... etc.
      - Then we will repeat the whole cycle once more 3 x 10/3 x 10/3 x 20/ 3 x 30
-     - Or you can do it this way (3 x 10 ) - 4 weeks followed by 2 weeks of (3 x 20) then 2 weeks of (3 x 30) etc. - this is actually harder the 2 weeks of 3 x 30 are really hard.
-     - After this is over you can chose your SE workout.
-     - Recommend doing 100 kettlebell swings per SE workout after this.
+     - Or you can do it this way (3 x 10 ) - 4 weeks followed by 2 weeks of (3 x 20) then 2 weeks of (3 x 30) etc. - this is actually harder the 2 weeks of 3 x 30 are really hard
+     - After this is over you can chose your SE workout
+     - Recommend doing 100 kettlebell swings per SE workout after this
 </div>
 
-# DO NOT OVERTHINK - FOLLOW THIS PLAN FOR 2 months.
+# DO NOT OVERTHINK - FOLLOW THIS PLAN FOR 2 months
 # DO NOT LOOK AT RESULTS/WEIGHT FOR 2 months
 # DO NOT LOOK ONLINE at ANY DIET, EXERCISE, FITNESS related content - just do these exercises and call it quits
 # Note starting weight, starting resting heart rate and starting Vo2 Max or Cardio Fitness
