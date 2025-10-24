@@ -62,18 +62,18 @@
 # EXERCISE
 1. Just do 10k steps a day
 or (something like)
-Mon - <a href="#LISS">LISS</a>
-Tue - <a href="#SE">S/E</a>
-Wed - LISS
-Thu - Break
-Fri - S/E
-Sat - LISS
-Sun - Break
+- Mon - <a href="#LISS">LISS</a>
+- Tue - <a href="#SE">S/E</a>
+- Wed - LISS
+- Thu - Break
+- Fri - S/E
+- Sat - LISS
+- Sun - Break
 
-- Can move break to whatever days work best
+- Can move break to whatever days work best, can move LISS and SE days around but 1 LISS followed by 1 SE works really well.
 
 <div id="LISS">
-    <h2>LISS</h2>
+    ## LISS
     
     - Low intensity steady state cardio
     - intensity should be low i.e. - you should be able to hold a conversation comfortably but barely or you heart rate after 15 mins should stay steady
@@ -83,11 +83,11 @@ Sun - Break
     - Start by working up to 30 mins a day
     - The main goal is to start the habit and try to not injure and tire ourselves so we can do this consistently
     - Do stretches after, do plank after (try to work up to 90 second plank)
-    
+
 </div>
 
 <div id="SE">
-    <h2>SE</h2>
+    ## SE
     
     - This is going to help build ligament strength, joint and muscle endurance
     - Warmup
