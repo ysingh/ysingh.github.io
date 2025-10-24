@@ -74,6 +74,7 @@ Sun - Break
 
 <div id="LISS">
     <h2>LISS</h2>
+    
     - Low intensity steady state cardio
     - intensity should be low i.e. - you should be able to hold a conversation comfortably but barely or you heart rate after 15 mins should stay steady
     - start by working upto 30 mins if needed.
@@ -82,13 +83,15 @@ Sun - Break
     - Start by working up to 30 mins a day
     - The main goal is to start the habit and try to not injure and tire ourselves so we can do this consistently
     - Do stretches after, do plank after (try to work up to 90 second plank)
+    
 </div>
 
 <div id="SE">
     <h2>SE</h2>
+    
     - This is going to help build ligament strength, joint and muscle endurance
-     - Warmup
-     - We will do a circuit of
+    - Warmup
+    - We will do a circuit of
      - Use whatever weight but make sure it's one you can easily do for 30 reps
      1. Squat (3 x 10)/(3 x 10)/(3 x 20)/(3 x 30)
      2. Bench Press (3 x 10)/(3 x 10)/(3 x 20)/(3 x 30)
