@@ -72,7 +72,8 @@ or (something like)
 
 - Can move break to whatever days work best, can move LISS and SE days around but 1 LISS followed by 1 SE works really well.
 
-<div id="LISS">
+<div id="LISS" markdown="1">
+    
     ## LISS
     
     - Low intensity steady state cardio
@@ -86,7 +87,8 @@ or (something like)
 
 </div>
 
-<div id="SE">
+<div id="SE" markdown="1">
+    
     ## SE
     
     - This is going to help build ligament strength, joint and muscle endurance
