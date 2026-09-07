@@ -3,48 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mumbai Restaurant Recommendations</title>
+<title>Mumbai Restaurant Recommendations (Async Fetch)</title>
 <style>
-  /* Mobile-first base styles */
+  /* Mobile-first Base Styles */
   * {
     box-sizing: border-box;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
   
   body {
-    background-color: #f7f8fa;
+    background-color: #f0f2f5;
     color: #1a1a1a;
     margin: 0;
-    padding: 16px;
-    line-height: 1.5;
+    padding: 12px;
+    line-height: 1.4;
   }
 
-  /* Sticky top bar for adding new items */
-  .add-item-container {
-    display: flex;
-    gap: 8px;
+  /* Sticky Header & Add Item Controls */
+  .sticky-header {
     position: sticky;
     top: 0;
-    background-color: rgba(247, 248, 250, 0.95);
-    padding: 12px 0;
+    background-color: rgba(240, 242, 245, 0.95);
+    padding: 16px 0;
     z-index: 100;
-    border-bottom: 1px solid #e1e4e8;
-    margin-bottom: 20px;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 16px;
+    margin-top: -12px;
   }
 
-  .add-item-container input {
-    flex: 1;
-    padding: 14px 16px;
-    font-size: 16px; /* 16px prevents iOS zoom on focus */
-    border: 1px solid #d1d5da;
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .input-group input, 
+  .input-group select {
+    padding: 12px 16px;
+    font-size: 16px; 
+    border: 1px solid #ccc;
     border-radius: 8px;
     outline: none;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    background-color: #fff;
+    width: 100%;
   }
 
-  .add-item-container button {
-    padding: 14px 20px;
+  .input-group select {
+    cursor: pointer;
+  }
+
+  .add-btn {
+    padding: 12px 20px;
     font-size: 16px;
     font-weight: 600;
     background-color: #0366d6;
@@ -53,46 +63,139 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s;
+    width: 100%;
   }
 
-  .add-item-container button:active {
+  .add-btn:active {
     background-color: #005cc5;
   }
+  
+  .add-btn:disabled {
+    background-color: #959da5;
+    cursor: not-allowed;
+  }
 
-  /* List & Category styling */
+  /* Category Headers */
   h2 {
     font-size: 1.25rem;
     color: #24292e;
     margin-top: 24px;
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #eaecef;
+    border-bottom: 2px solid #e1e4e8;
   }
 
   ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 50px;
   }
 
-  li {
+  /* Restaurant Card Layout */
+  .rest-card {
+    display: flex;
+    flex-direction: row;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+    border: 1px solid #eaecef;
+    position: relative;
+    cursor: grab;
+  }
+  
+  .rest-card:active {
+    cursor: grabbing;
+  }
+
+  .rest-card.dragging {
+    opacity: 0.5;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    transform: scale(0.98);
+    z-index: 50;
+  }
+
+  .drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    color: #babbbd;
+    font-size: 24px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #eaecef;
+    touch-action: none; 
+  }
+
+  .rest-img {
+    width: 90px;
+    height: auto;
+    object-fit: cover;
+    background-color: #e1e4e8;
+    flex-shrink: 0;
+  }
+
+  .rest-content {
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .rest-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    background-color: #ffffff;
-    margin-bottom: 10px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(27,31,35,0.1);
-    transition: all 0.3s ease;
-    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 4px;
   }
 
-  .item-text {
-    flex: 1;
-    font-size: 1rem;
-    word-break: break-word;
-    transition: color 0.3s ease;
+  .rest-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+    padding-right: 8px;
+  }
+
+  .rest-rating {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #24963f;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .rest-note {
+    font-size: 0.85rem;
+    color: #586069;
+    font-style: italic;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .rest-details {
+    font-size: 0.8rem;
+    color: #444;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .rest-details span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .action-btn {
@@ -100,203 +203,382 @@
     color: white;
     border: none;
     border-radius: 6px;
-    padding: 10px 16px;
-    font-size: 0.875rem;
+    padding: 8px 12px;
+    font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
-    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: auto;
     transition: background-color 0.2s;
   }
 
-  .action-btn:active {
-    background-color: #cf222e;
-  }
-
-  /* Crossed out (removed) state styles */
-  li.removed {
-    opacity: 0.5;
+  /* Checked/Removed State */
+  .rest-card.removed {
+    opacity: 0.6;
     background-color: #f6f8fa;
-    box-shadow: none;
-    border: 1px solid #eaecef;
+    border-color: #d1d5da;
   }
 
-  li.removed .item-text {
+  .rest-card.removed .rest-img {
+    filter: grayscale(100%);
+    opacity: 0.5;
+  }
+
+  .rest-card.removed .rest-name,
+  .rest-card.removed .rest-note,
+  .rest-card.removed .rest-details {
     text-decoration: line-through;
     color: #6a737d;
   }
 
-  li.removed .action-btn {
+  .rest-card.removed .rest-rating {
+    background-color: #959da5;
+  }
+
+  .rest-card.removed .action-btn {
     background-color: #6a737d;
   }
 
-  li.removed .action-btn:active {
-    background-color: #586069;
+  /* Loading State Animations */
+  @keyframes shimmer {
+    0% { background-position: -468px 0; }
+    100% { background-position: 468px 0; }
   }
 
-  /* Desktop breakpoint for slightly better spacing */
+  .loading-skeleton {
+    animation: shimmer 1.5s infinite linear;
+    background: #f6f7f8;
+    background: linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%);
+    background-size: 800px 104px;
+    border-radius: 4px;
+    color: transparent !important;
+  }
+
+  .rest-card.is-loading .rest-img {
+    animation: shimmer 1.5s infinite linear;
+    background: linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%);
+    background-size: 800px 104px;
+  }
+
+  /* Desktop View Enhancements */
   @media (min-width: 768px) {
-    body {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+    body { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .sticky-header { margin-top: 0; }
+    .input-group { flex-direction: row; align-items: stretch; }
+    #newItemInput { flex: 2; }
+    #categorySelect { flex: 1.5; }
+    #newCategoryInput { flex: 1.5; }
+    .add-btn { width: auto; }
+    .rest-img { width: 120px; }
+    .rest-content { padding: 16px; }
   }
 </style>
 </head>
 <body>
 
-  <!-- Input area to add new items -->
-  <div class="add-item-container">
-    <input type="text" id="newItemInput" placeholder="Add a new restaurant...">
-    <button onclick="addNewItem()">Add</button>
+  <div class="sticky-header">
+    <div class="input-group">
+      <input type="text" id="newItemInput" placeholder="Add a new restaurant...">
+      <select id="categorySelect" onchange="handleCategoryChange()"></select>
+      <input type="text" id="newCategoryInput" placeholder="New category name..." style="display: none;">
+      <button id="addItemBtn" class="add-btn" onclick="addNewItem()">Add Item</button>
+    </div>
   </div>
 
-  <div id="list-container">
-    <h2>South Indian / Coastal / Seafood</h2>
-    <ul>
-      <li><span class="item-text">Trishna (Fort - Seafood)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Rameshwaram Cafe (South Indian - Note: One user recommended it, another advised avoiding it)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Cafe Madras (South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Santosham (South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Mutuswamy (South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Sri Krishna (South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Ramashray (Matunga - South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Benne / Benne Dosa (Bandra, Girgaon - Dosas)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Kari Apla (Coastal cuisine)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Dakshin (ITC Grand Central, Parel - Kerala thalis)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Maasli</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Tanjore Tiffin Room (Bandra)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-
-    <h2>North Indian / Mughlai / Kebabs</h2>
-    <ul>
-      <li><span class="item-text">Peshawari (ITC Grand Maratha - limited menu, dal makhani, kebabs)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Sheetal Bukhara (Khar - old school North Indian, Tandoori Pomfret)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Bukhara (New Delhi - mentioned as a comparison/alternative to Peshawari)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Miya Kebabs (Bandra, Fort - Lebanese, Changezi chicken, kebabs)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Khyber (Known for their Raan)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Cafe Nur (Kebabs)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Masala Bay (Taj Lands End - North Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Gallops (Known for Yakhni Pulav and kebabs, Indian and Continental)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Gaylord (70-year-old place, good Indian food and vibe)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-
-    <h2>Goan / Portuguese / East Indian</h2>
-    <ul>
-      <li><span class="item-text">O Pedro (Goan/Portuguese fusion, Ceviche)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Sorozai (Poi and Pork Vindaloo)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Freny's (Bandra - Local East Indian cuisine)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-
-    <h2>Modern Indian / Fusion / Experiential</h2>
-    <ul>
-      <li><span class="item-text">The Bombay Canteen (Modern Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Ekaa (Fort - Experimental/Modern Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Bandra Born (Bandra - Interesting takes on Indian food)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-
-    <h2>Maharashtrian</h2>
-    <ul>
-      <li><span class="item-text">Chaitanya (Marathi Seafood)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Goa Portuguesa / Diva Maharashtracha (Mahim/Dadar - Marathi/Goan seafood and Marathi cuisine)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Prakash (Dadar/Mahim - Marathi Vegetarian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Aaswad (Dadar/Mahim - Marathi Vegetarian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Maratha Kitchen</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-
-    <h2>Gujarati / Thalis / Vegetarian</h2>
-    <ul>
-      <li><span class="item-text">Sri Thakar Bhojanalay (Unlimited vegetarian Gujarati thali)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Soam (South Bombay - Gujarati food/Indian vegan)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-
-    <h2>Street Food / Chaat / Snacks</h2>
-    <ul>
-      <li><span class="item-text">Swati Snacks (Nariman Point - Bombay street food)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Bombay Sweet Shop (Indian fusion desserts)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Jai Jawan (Bandra - Fried prawns)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Punjab Sweet House (Bandra - Chaat)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Karachi Sweets (Bandra - Chaat)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Sharma Chaat Bundar (Juhu)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Shiv Sagar (Juhu - OG place, great Pav Bhaji)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Maruti (Known for black Pav Bhaji)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Kwality's (The OG for Frankies)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">The Roll Company (Frankies)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">J-Hearsh (Bandra Hill Road - old school bakery, veg and mutton puffs)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-
-    <h2>Fine Dining / 5-Star Hotel Restaurants</h2>
-    <ul>
-      <li><span class="item-text">Shamiana (Taj Mahal Palace, South Bombay)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">The Bayview (Marine Plaza, South Bombay)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Ziya (The Oberoi, South Bombay)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Pali Bhavan (Eros Theatre, Churchgate - ambience and food)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Melting Pot (Juhu)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-
-    <h2>Indo-Chinese / Continental</h2>
-    <ul>
-      <li><span class="item-text">Ling's Pavilion (Legacy Indo-Chinese)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Jimme's Kitchen (Bandra/Chapel Road - Indo-Chinese)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Wanton House (Bandra/Chapel Road)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-      <li><span class="item-text">Old Street Cafe and Bar (Bandra/Chapel Road)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
-    </ul>
-  </div>
+  <div id="list-container"></div>
 
   <script>
-    // Toggles the dull/crossed out state for an item
-    function toggleItem(button) {
-      const listItem = button.closest('li');
-      listItem.classList.toggle('removed');
-      
-      // Update button text to allow undo functionality
-      if (listItem.classList.contains('removed')) {
-        button.textContent = 'Restore';
-      } else {
-        button.textContent = 'Remove';
+    // --- Data & Initialization --- //
+    const categories = [
+      {
+        title: "South Indian / Coastal / Seafood",
+        items: [
+          { name: "Trishna", note: "Fort - Seafood", loc: "Kala Ghoda, Fort", hours: "12:00 PM - 3:30 PM, 6:30 PM - 12:00 AM", phone: "+91 22 2270 3214", rating: "4.4" },
+          { name: "Rameshwaram Cafe", note: "South Indian (Mixed user reviews)", loc: "Mumbai / Bangalore", hours: "6:30 AM - 1:00 AM", phone: "Available via App", rating: "4.1" }
+        ]
+      },
+      {
+        title: "Goan / Portuguese / East Indian",
+        items: [
+          { name: "O Pedro", note: "Goan/Portuguese fusion", loc: "BKC (Bandra Kurla Complex)", hours: "12:00 PM - 1:30 AM", phone: "+91 75065 25554", rating: "4.8" }
+        ]
       }
+    ];
+
+    function getSafeId(name) { return 'cat-' + name.replace(/[^a-zA-Z0-9]/g, ''); }
+    
+    function getImgSrc(name) {
+      const safeName = encodeURIComponent(name.replace(/\s+/g, '').toLowerCase());
+      return `https://picsum.photos/seed/${safeName}/200/200`;
     }
 
-    // Handles adding a new item from the input field
-    function addNewItem() {
+    function populateDropdown() {
+      const select = document.getElementById('categorySelect');
+      select.innerHTML = '';
+      categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.title;
+        option.textContent = category.title;
+        select.appendChild(option);
+      });
+      const newCatOption = document.createElement('option');
+      newCatOption.value = 'NEW_CATEGORY';
+      newCatOption.textContent = '+ Create New Category...';
+      newCatOption.style.fontWeight = 'bold';
+      select.appendChild(newCatOption);
+    }
+
+    function handleCategoryChange() {
+      const select = document.getElementById('categorySelect');
+      const newCatInput = document.getElementById('newCategoryInput');
+      newCatInput.style.display = (select.value === 'NEW_CATEGORY') ? 'block' : 'none';
+      if (select.value === 'NEW_CATEGORY') newCatInput.focus();
+    }
+
+    // --- Card HTML Generation --- //
+    
+    // This function generates the interior of the card. 
+    // It takes an 'isLoading' boolean to render skeleton loading animations.
+    function generateCardInnerHTML(item, isLoading = false) {
+      if (isLoading) {
+        return `
+          <div class="drag-handle">☰</div>
+          <div class="rest-img"></div>
+          <div class="rest-content">
+            <div class="rest-header">
+              <h3 class="rest-name loading-skeleton" style="width: 150px; height: 24px; margin-bottom:4px;">Loading...</h3>
+              <span class="rest-rating loading-skeleton" style="width: 40px; height: 20px;">0.0</span>
+            </div>
+            <div class="rest-note loading-skeleton" style="width: 100px; height: 16px; margin-bottom:12px;">fetching...</div>
+            <div class="rest-details">
+              <span class="loading-skeleton" style="width: 80%; height: 14px; margin-bottom:4px;">loc</span>
+              <span class="loading-skeleton" style="width: 60%; height: 14px; margin-bottom:4px;">hrs</span>
+              <span class="loading-skeleton" style="width: 70%; height: 14px;">ph</span>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="drag-handle">☰</div>
+        <img src="${getImgSrc(item.name)}" class="rest-img" alt="${item.name}">
+        <div class="rest-content">
+          <div class="rest-header">
+            <h3 class="rest-name">${item.name}</h3>
+            <span class="rest-rating">⭐ ${item.rating}</span>
+          </div>
+          <div class="rest-note">${item.note}</div>
+          <div class="rest-details">
+            <span>📍 ${item.loc}</span>
+            <span>🕒 ${item.hours}</span>
+            <span>📞 ${item.phone}</span>
+          </div>
+          <button class="action-btn" onclick="toggleItem(this)" style="margin-top: 12px;">Remove</button>
+        </div>
+      `;
+    }
+
+    function renderList() {
+      const container = document.getElementById('list-container');
+      container.innerHTML = '';
+
+      categories.forEach(category => {
+        const section = document.createElement('div');
+        let itemsHTML = category.items.map(item => `
+          <li class="rest-card" draggable="true" id="card-${item.name.replace(/\s+/g, '')}">
+            ${generateCardInnerHTML(item, false)}
+          </li>
+        `).join('');
+        
+        section.innerHTML = `
+          <h2>${category.title}</h2>
+          <ul id="${getSafeId(category.title)}" class="sortable-list">
+            ${itemsHTML}
+          </ul>
+        `;
+        container.appendChild(section);
+      });
+
+      attachDragEvents();
+    }
+
+    function toggleItem(button) {
+      const card = button.closest('.rest-card');
+      card.classList.toggle('removed');
+      button.textContent = card.classList.contains('removed') ? 'Restore' : 'Remove';
+    }
+
+
+    // --- API Fetch Logic --- //
+
+    // Simulated API Call. 
+    // If you had a real API key (like Google Places), you would replace the setTimeout block 
+    // with a real fetch() request:
+    //
+    // const response = await fetch(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(name)}&inputtype=textquery&fields=name,rating,formatted_phone_number,geometry,opening_hours&key=YOUR_API_KEY`);
+    // const data = await response.json();
+    // return { loc: data.address, hours: ..., etc }
+    
+    async function fetchRestaurantData(name) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          // Generates random realistic placeholder data for demonstration
+          const ratings = ["4.1", "4.3", "4.5", "4.6", "4.8"];
+          const areas = ["Bandra West", "Colaba", "Juhu", "Lower Parel", "Andheri"];
+          
+          resolve({
+            name: name,
+            note: "Added from web search",
+            loc: areas[Math.floor(Math.random() * areas.length)] + ", Mumbai",
+            hours: "11:00 AM - 11:30 PM",
+            phone: "+91 9" + Math.floor(100000000 + Math.random() * 900000000),
+            rating: ratings[Math.floor(Math.random() * ratings.length)]
+          });
+        }, 1500); // 1.5 second simulated network delay
+      });
+    }
+
+    // --- Async Add Item Flow --- //
+
+    async function addNewItem() {
       const input = document.getElementById('newItemInput');
+      const addBtn = document.getElementById('addItemBtn');
       const text = input.value.trim();
       
-      if (!text) return; // Do nothing if the input is empty
+      if (!text) { alert("Please enter a restaurant name."); return; }
 
-      // Create a "Custom Additions" section if it doesn't exist yet
-      let customSection = document.getElementById('custom-section');
-      if (!customSection) {
-        const container = document.getElementById('list-container');
-        customSection = document.createElement('div');
-        customSection.id = 'custom-section';
-        customSection.innerHTML = '<h2>Added by You</h2><ul id="custom-list"></ul>';
-        // Insert custom section right below the input bar
-        container.insertBefore(customSection, container.firstChild);
+      // Handle category selection logic
+      const select = document.getElementById('categorySelect');
+      let categoryTitle = select.value;
+
+      if (categoryTitle === 'NEW_CATEGORY') {
+        const newCatInput = document.getElementById('newCategoryInput');
+        categoryTitle = newCatInput.value.trim();
+        if (!categoryTitle) { alert("Please enter a name for your new category."); return; }
+
+        const newOption = document.createElement('option');
+        newOption.value = categoryTitle;
+        newOption.textContent = categoryTitle;
+        select.insertBefore(newOption, select.lastElementChild);
+        
+        select.value = categoryTitle;
+        newCatInput.style.display = 'none';
+        newCatInput.value = '';
       }
 
-      // Create the new list item
-      const ul = document.getElementById('custom-list');
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <span class="item-text">${text}</span>
-        <button class="action-btn" onclick="toggleItem(this)">Remove</button>
-      `;
+      const safeId = getSafeId(categoryTitle);
+      let targetList = document.getElementById(safeId);
+
+      // Create new category list if it doesn't exist yet
+      if (!targetList) {
+        const container = document.getElementById('list-container');
+        const section = document.createElement('div');
+        section.innerHTML = `<h2>${categoryTitle}</h2><ul id="${safeId}" class="sortable-list"></ul>`;
+        container.insertBefore(section, container.firstChild);
+        targetList = document.getElementById(safeId);
+        setupListDragEvents(targetList);
+      }
+
+      // 1. Create a unique ID for the new card
+      const uniqueCardId = 'card-' + Date.now();
       
-      // Add the item to the list and clear the input
-      ul.appendChild(li);
+      // 2. Build the outer LI element
+      const newCard = document.createElement('li');
+      newCard.className = 'rest-card is-loading';
+      newCard.id = uniqueCardId;
+      newCard.draggable = true;
+      
+      // 3. Inject the "Loading" HTML state
+      newCard.innerHTML = generateCardInnerHTML({ name: text }, true);
+      
+      // Bind drag events and insert into DOM
+      setupItemDragEvents(newCard);
+      targetList.appendChild(newCard);
+      
+      // Reset input, disable button while fetching, and scroll to the new card
       input.value = '';
-      
-      // Optionally scroll the new item into view
-      li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      addBtn.disabled = true;
+      addBtn.textContent = "Fetching...";
+      newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      try {
+        // 4. Await the API fetch
+        const fetchedData = await fetchRestaurantData(text);
+        
+        // 5. Update the card with the real data and remove the loading state
+        newCard.classList.remove('is-loading');
+        newCard.innerHTML = generateCardInnerHTML(fetchedData, false);
+        
+      } catch (error) {
+        console.error("Error fetching restaurant data:", error);
+        // Fallback if fetch fails
+        newCard.classList.remove('is-loading');
+        newCard.innerHTML = generateCardInnerHTML({
+          name: text, note: "Error fetching data", loc: "N/A", hours: "N/A", phone: "N/A", rating: "N/A"
+        }, false);
+      } finally {
+        addBtn.disabled = false;
+        addBtn.textContent = "Add Item";
+      }
     }
 
-    // Allow pressing "Enter" on the keyboard to add an item
-    document.getElementById('newItemInput').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        addNewItem();
-      }
+
+    // --- Drag and Drop Logic --- //
+
+    function attachDragEvents() {
+      const items = document.querySelectorAll('.rest-card');
+      const lists = document.querySelectorAll('.sortable-list');
+      items.forEach(item => setupItemDragEvents(item));
+      lists.forEach(list => setupListDragEvents(list));
+    }
+
+    function setupItemDragEvents(item) {
+      item.addEventListener('dragstart', () => {
+        setTimeout(() => item.classList.add('dragging'), 0);
+      });
+      item.addEventListener('dragend', () => item.classList.remove('dragging'));
+    }
+
+    function setupListDragEvents(list) {
+      list.addEventListener('dragover', e => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(list, e.clientY);
+        const draggable = document.querySelector('.dragging');
+        if (draggable) {
+          if (afterElement == null) {
+            list.appendChild(draggable);
+          } else {
+            list.insertBefore(draggable, afterElement);
+          }
+        }
+      });
+    }
+
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.rest-card:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Keyboard shortcuts
+    document.getElementById('newItemInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') addNewItem();
     });
+    document.getElementById('newCategoryInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') addNewItem();
+    });
+
+    window.onload = function() {
+      renderList();
+      populateDropdown();
+    };
   </script>
 </body>
 </html>
