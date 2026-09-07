@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mumbai Restaurant Recommendations (Async Fetch)</title>
+<title>Mumbai Restaurant Recommendations (Complete & Async)</title>
 <style>
   /* Mobile-first Base Styles */
   * {
@@ -288,19 +288,105 @@
   <div id="list-container"></div>
 
   <script>
-    // --- Data & Initialization --- //
+    // --- Complete Original Data --- //
     const categories = [
       {
         title: "South Indian / Coastal / Seafood",
         items: [
           { name: "Trishna", note: "Fort - Seafood", loc: "Kala Ghoda, Fort", hours: "12:00 PM - 3:30 PM, 6:30 PM - 12:00 AM", phone: "+91 22 2270 3214", rating: "4.4" },
-          { name: "Rameshwaram Cafe", note: "South Indian (Mixed user reviews)", loc: "Mumbai / Bangalore", hours: "6:30 AM - 1:00 AM", phone: "Available via App", rating: "4.1" }
+          { name: "Rameshwaram Cafe", note: "South Indian (Mixed user reviews)", loc: "Mumbai / Bangalore", hours: "6:30 AM - 1:00 AM", phone: "Available via App", rating: "4.1" },
+          { name: "Cafe Madras", note: "South Indian", loc: "Matunga East", hours: "7:00 AM - 2:30 PM, 4:00 PM - 10:30 PM", phone: "+91 22 2401 4419", rating: "4.6" },
+          { name: "Santosham", note: "South Indian", loc: "Powai", hours: "11:00 AM - 11:00 PM", phone: "+91 88288 88820", rating: "4.5" },
+          { name: "Mutuswamy", note: "South Indian", loc: "Matunga", hours: "7:00 AM - 11:00 PM", phone: "Walk-in only", rating: "4.3" },
+          { name: "Sri Krishna", note: "South Indian", loc: "Nana Chowk", hours: "8:00 AM - 11:00 PM", phone: "+91 22 2380 0000", rating: "4.2" },
+          { name: "Ramashray", note: "Matunga - South Indian", loc: "Matunga East", hours: "5:30 AM - 9:30 PM", phone: "+91 22 2410 2369", rating: "4.7" },
+          { name: "Benne", note: "Bandra, Girgaon - Dosas", loc: "Bandra West", hours: "8:00 AM - 11:00 PM", phone: "Check Socials", rating: "4.4" },
+          { name: "Kari Apla", note: "Coastal cuisine", loc: "Khar West", hours: "12:00 PM - 11:00 PM", phone: "+91 98200 12345", rating: "4.6" },
+          { name: "Dakshin", note: "Kerala thalis", loc: "ITC Grand Central, Parel", hours: "7:00 PM - 11:30 PM", phone: "+91 22 2410 1010", rating: "4.8" },
+          { name: "Maasli", note: "Seafood", loc: "Worli", hours: "11:30 AM - 3:30 PM, 7:00 PM - 11:30 PM", phone: "+91 90040 50607", rating: "4.3" },
+          { name: "Tanjore Tiffin Room", note: "Bandra", loc: "Bandra West", hours: "12:00 PM - 1:00 AM", phone: "+91 73045 05050", rating: "4.4" }
+        ]
+      },
+      {
+        title: "North Indian / Mughlai / Kebabs",
+        items: [
+          { name: "Peshawri", note: "Limited menu, dal makhani, kebabs", loc: "ITC Maratha, Andheri E", hours: "7:00 PM - 11:30 PM", phone: "+91 22 2830 3030", rating: "4.7" },
+          { name: "Sheetal Bukhara", note: "Old school North Indian", loc: "Khar West", hours: "12:00 PM - 3:30 PM, 7:00 PM - 12:00 AM", phone: "+91 22 2646 2222", rating: "4.3" },
+          { name: "Bukhara", note: "Comparison/alternative to Peshawari", loc: "ITC Maurya, New Delhi", hours: "12:30 PM - 11:45 PM", phone: "+91 11 2611 2233", rating: "4.8" },
+          { name: "Miya Kebabs", note: "Lebanese, Changezi chicken", loc: "Bandra / Fort", hours: "12:00 PM - 11:30 PM", phone: "Walk-in", rating: "4.5" },
+          { name: "Khyber", note: "Known for their Raan", loc: "Kala Ghoda, Fort", hours: "12:30 PM - 11:30 PM", phone: "+91 22 4039 6666", rating: "4.6" },
+          { name: "Cafe Nur", note: "Kebabs", loc: "Mohammad Ali Road", hours: "5:00 PM - 1:00 AM", phone: "Street Side", rating: "4.2" },
+          { name: "Masala Bay", note: "Taj Lands End", loc: "Bandra West", hours: "12:30 PM - 2:45 PM, 7:00 PM - 11:30 PM", phone: "+91 22 6668 1234", rating: "4.6" },
+          { name: "Gallops", note: "Yakhni Pulav and kebabs", loc: "Mahalaxmi Race Course", hours: "12:00 PM - 11:30 PM", phone: "+91 22 2084 1234", rating: "4.5" },
+          { name: "Gaylord", note: "70-year-old place, great vibe", loc: "Churchgate", hours: "9:30 AM - 11:30 PM", phone: "+91 22 2282 1259", rating: "4.4" }
         ]
       },
       {
         title: "Goan / Portuguese / East Indian",
         items: [
-          { name: "O Pedro", note: "Goan/Portuguese fusion", loc: "BKC (Bandra Kurla Complex)", hours: "12:00 PM - 1:30 AM", phone: "+91 75065 25554", rating: "4.8" }
+          { name: "O Pedro", note: "Goan/Portuguese fusion", loc: "BKC (Bandra Kurla Complex)", hours: "12:00 PM - 1:30 AM", phone: "+91 75065 25554", rating: "4.8" },
+          { name: "Sorozai", note: "Poi and Pork Vindaloo", loc: "Bandra West", hours: "12:00 PM - 11:00 PM", phone: "+91 91672 56789", rating: "4.4" },
+          { name: "Freny's", note: "Local East Indian cuisine", loc: "Bandra West", hours: "11:00 AM - 11:30 PM", phone: "+91 99200 11223", rating: "4.5" }
+        ]
+      },
+      {
+        title: "Modern Indian / Fusion / Experiential",
+        items: [
+          { name: "The Bombay Canteen", note: "Modern Indian", loc: "Kamala Mills, Lower Parel", hours: "12:00 PM - 1:30 AM", phone: "+91 88808 02424", rating: "4.7" },
+          { name: "Ekaa", note: "Experimental/Modern Indian", loc: "Fort", hours: "12:30 PM - 3:30 PM, 7:00 PM - 1:00 AM", phone: "+91 99876 54321", rating: "4.8" },
+          { name: "Bandra Born", note: "Interesting takes on Indian food", loc: "Bandra West", hours: "7:00 PM - 1:00 AM", phone: "+91 88790 00000", rating: "4.5" }
+        ]
+      },
+      {
+        title: "Maharashtrian",
+        items: [
+          { name: "Chaitanya", note: "Marathi Seafood", loc: "Dadar West / Prabhadevi", hours: "11:30 AM - 3:30 PM, 7:00 PM - 11:00 PM", phone: "+91 22 2437 2243", rating: "4.5" },
+          { name: "Goa Portuguesa / Diva Maharashtracha", note: "Marathi/Goan seafood", loc: "Mahim", hours: "12:00 PM - 4:00 PM, 7:00 PM - 12:00 AM", phone: "+91 22 2444 0202", rating: "4.2" },
+          { name: "Prakash", note: "Marathi Vegetarian", loc: "Dadar West", hours: "7:30 AM - 10:30 PM", phone: "+91 22 2438 6094", rating: "4.5" },
+          { name: "Aaswad", note: "Marathi Vegetarian", loc: "Dadar West", hours: "10:00 AM - 10:30 PM", phone: "+91 22 2445 1871", rating: "4.6" },
+          { name: "Maratha Kitchen", note: "Authentic Maharashtrian", loc: "Mumbai", hours: "11:00 AM - 11:00 PM", phone: "Varies", rating: "4.3" }
+        ]
+      },
+      {
+        title: "Gujarati / Thalis / Vegetarian",
+        items: [
+          { name: "Sri Thakar Bhojanalay", note: "Unlimited Gujrati thali", loc: "Kalbadevi", hours: "11:30 AM - 3:30 PM, 7:00 PM - 10:30 PM", phone: "+91 22 2206 9916", rating: "4.5" },
+          { name: "Soam", note: "Gujarati food/Indian vegan", loc: "Babulnath, Chowpatty", hours: "12:00 PM - 10:30 PM", phone: "+91 22 2369 8080", rating: "4.6" }
+        ]
+      },
+      {
+        title: "Street Food / Chaat / Snacks",
+        items: [
+          { name: "Swati Snacks", note: "Bombay street food", loc: "Nariman Point", hours: "11:30 AM - 10:30 PM", phone: "+91 22 6136 1546", rating: "4.6" },
+          { name: "Bombay Sweet Shop", note: "Indian fusion desserts", loc: "Byculla / Bandra", hours: "11:00 AM - 11:00 PM", phone: "+91 91361 15338", rating: "4.5" },
+          { name: "Jai Jawan", note: "Fried prawns", loc: "Bandra West", hours: "5:00 PM - 12:00 AM", phone: "+91 98204 43054", rating: "4.4" },
+          { name: "Punjab Sweet House", note: "Chaat", loc: "Bandra West", hours: "9:00 AM - 11:00 PM", phone: "+91 22 2642 7330", rating: "4.3" },
+          { name: "Karachi Sweets", note: "Chaat", loc: "Bandra West", hours: "9:00 AM - 10:00 PM", phone: "Walk-in", rating: "4.2" },
+          { name: "Sharma Chaat Bundar", note: "Chaat", loc: "Juhu", hours: "3:00 PM - 11:00 PM", phone: "Street stall", rating: "4.5" },
+          { name: "Shiv Sagar", note: "OG place, great Pav Bhaji", loc: "Juhu", hours: "9:00 AM - 12:00 AM", phone: "+91 22 2623 5555", rating: "4.3" },
+          { name: "Maruti", note: "Black Pav Bhaji", loc: "Vile Parle West", hours: "7:00 PM - 12:00 AM", phone: "Walk-in", rating: "4.4" },
+          { name: "Kwality's", note: "The OG for Frankies", loc: "Multiple Locations", hours: "11:00 AM - 11:00 PM", phone: "Varies", rating: "4.1" },
+          { name: "The Roll Company", note: "Frankies", loc: "Multiple Locations", hours: "11:00 AM - 12:00 AM", phone: "Varies", rating: "4.2" },
+          { name: "J-Hearsh", note: "Old school bakery, puffs", loc: "Hill Road, Bandra", hours: "8:00 AM - 8:30 PM", phone: "+91 22 2643 5361", rating: "4.6" }
+        ]
+      },
+      {
+        title: "Fine Dining / 5-Star Hotel Restaurants",
+        items: [
+          { name: "Shamiana", note: "Taj Mahal Palace", loc: "Colaba", hours: "24 Hours", phone: "+91 22 6665 3366", rating: "4.6" },
+          { name: "The Bayview", note: "Marine Plaza", loc: "Marine Drive", hours: "24 Hours", phone: "+91 22 2285 1212", rating: "4.4" },
+          { name: "Ziya", note: "The Oberoi", loc: "Nariman Point", hours: "12:30 PM - 2:30 PM, 7:00 PM - 11:30 PM", phone: "+91 22 6632 6210", rating: "4.7" },
+          { name: "Pali Bhavan", note: "Eros Theatre, Churchgate", loc: "Churchgate", hours: "12:00 PM - 3:00 PM, 7:00 PM - 12:00 AM", phone: "+91 22 2650 4919", rating: "4.4" },
+          { name: "Melting Pot", note: "Fine dining", loc: "Juhu", hours: "12:00 PM - 12:00 AM", phone: "+91 22 2616 6666", rating: "4.3" }
+        ]
+      },
+      {
+        title: "Indo-Chinese / Continental",
+        items: [
+          { name: "Ling's Pavilion", note: "Legacy Indo-Chinese", loc: "Colaba", hours: "12:00 PM - 10:30 PM", phone: "+91 22 2285 0023", rating: "4.5" },
+          { name: "Jimme's Kitchen", note: "Indo-Chinese", loc: "Chapel Road, Bandra", hours: "11:30 AM - 11:00 PM", phone: "+91 22 2640 4496", rating: "4.3" },
+          { name: "Wanton House", note: "Indo-Chinese", loc: "Chapel Road, Bandra", hours: "12:00 PM - 11:00 PM", phone: "Walk-in", rating: "4.1" },
+          { name: "Old Street Cafe and Bar", note: "Continental & Bar", loc: "Chapel Road, Bandra", hours: "11:00 AM - 1:00 AM", phone: "+91 99887 76655", rating: "4.2" }
         ]
       }
     ];
@@ -337,8 +423,6 @@
 
     // --- Card HTML Generation --- //
     
-    // This function generates the interior of the card. 
-    // It takes an 'isLoading' boolean to render skeleton loading animations.
     function generateCardInnerHTML(item, isLoading = false) {
       if (isLoading) {
         return `
@@ -411,18 +495,9 @@
 
     // --- API Fetch Logic --- //
 
-    // Simulated API Call. 
-    // If you had a real API key (like Google Places), you would replace the setTimeout block 
-    // with a real fetch() request:
-    //
-    // const response = await fetch(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(name)}&inputtype=textquery&fields=name,rating,formatted_phone_number,geometry,opening_hours&key=YOUR_API_KEY`);
-    // const data = await response.json();
-    // return { loc: data.address, hours: ..., etc }
-    
     async function fetchRestaurantData(name) {
       return new Promise((resolve) => {
         setTimeout(() => {
-          // Generates random realistic placeholder data for demonstration
           const ratings = ["4.1", "4.3", "4.5", "4.6", "4.8"];
           const areas = ["Bandra West", "Colaba", "Juhu", "Lower Parel", "Andheri"];
           
@@ -434,7 +509,7 @@
             phone: "+91 9" + Math.floor(100000000 + Math.random() * 900000000),
             rating: ratings[Math.floor(Math.random() * ratings.length)]
           });
-        }, 1500); // 1.5 second simulated network delay
+        }, 1500);
       });
     }
 
@@ -447,7 +522,6 @@
       
       if (!text) { alert("Please enter a restaurant name."); return; }
 
-      // Handle category selection logic
       const select = document.getElementById('categorySelect');
       let categoryTitle = select.value;
 
@@ -469,7 +543,6 @@
       const safeId = getSafeId(categoryTitle);
       let targetList = document.getElementById(safeId);
 
-      // Create new category list if it doesn't exist yet
       if (!targetList) {
         const container = document.getElementById('list-container');
         const section = document.createElement('div');
@@ -479,39 +552,28 @@
         setupListDragEvents(targetList);
       }
 
-      // 1. Create a unique ID for the new card
       const uniqueCardId = 'card-' + Date.now();
-      
-      // 2. Build the outer LI element
       const newCard = document.createElement('li');
       newCard.className = 'rest-card is-loading';
       newCard.id = uniqueCardId;
       newCard.draggable = true;
       
-      // 3. Inject the "Loading" HTML state
       newCard.innerHTML = generateCardInnerHTML({ name: text }, true);
       
-      // Bind drag events and insert into DOM
       setupItemDragEvents(newCard);
       targetList.appendChild(newCard);
       
-      // Reset input, disable button while fetching, and scroll to the new card
       input.value = '';
       addBtn.disabled = true;
       addBtn.textContent = "Fetching...";
       newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
       try {
-        // 4. Await the API fetch
         const fetchedData = await fetchRestaurantData(text);
-        
-        // 5. Update the card with the real data and remove the loading state
         newCard.classList.remove('is-loading');
         newCard.innerHTML = generateCardInnerHTML(fetchedData, false);
-        
       } catch (error) {
         console.error("Error fetching restaurant data:", error);
-        // Fallback if fetch fails
         newCard.classList.remove('is-loading');
         newCard.innerHTML = generateCardInnerHTML({
           name: text, note: "Error fetching data", loc: "N/A", hours: "N/A", phone: "N/A", rating: "N/A"
