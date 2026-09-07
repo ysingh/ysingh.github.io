@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mumbai Restaurant Recommendations (Fixed Images)</title>
+<title>Mumbai Restaurant Recommendations (No Images)</title>
 <style>
   /* Mobile-first Base Styles */
   * {
@@ -138,7 +138,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 10px;
+    padding: 0 12px;
     color: #babbbd;
     font-size: 24px;
     background-color: #f8f9fa;
@@ -146,16 +146,8 @@
     touch-action: none; 
   }
 
-  .rest-img {
-    width: 100px;
-    height: auto;
-    object-fit: cover;
-    background-color: #e1e4e8;
-    flex-shrink: 0;
-  }
-
   .rest-content {
-    padding: 12px;
+    padding: 16px;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -166,11 +158,11 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 
   .rest-name {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #111;
     margin: 0;
@@ -191,16 +183,16 @@
     font-size: 0.85rem;
     color: #586069;
     font-style: italic;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     line-height: 1.2;
   }
 
   .rest-details {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: #444;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 6px;
   }
 
   .rest-details span {
@@ -216,13 +208,12 @@
   .card-footer {
     display: flex;
     flex-direction: column;
-    margin-top: auto;
+    margin-top: 16px;
     gap: 12px;
   }
 
   .must-haves {
-    margin-top: 10px;
-    padding-top: 10px;
+    padding-top: 12px;
     border-top: 1px dashed #eaecef;
     font-size: 0.85rem;
     color: #586069;
@@ -244,7 +235,7 @@
     border: none;
     border-radius: 6px;
     padding: 8px 12px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -260,10 +251,6 @@
     opacity: 0.6;
     background-color: #f6f8fa;
     border-color: #d1d5da;
-  }
-  .rest-card.removed .rest-img {
-    filter: grayscale(100%);
-    opacity: 0.5;
   }
   .rest-card.removed .rest-name,
   .rest-card.removed .rest-note,
@@ -296,11 +283,6 @@
     border-radius: 4px;
     color: transparent !important;
   }
-  .rest-card.is-loading .rest-img {
-    animation: shimmer 1.5s infinite linear;
-    background: linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%);
-    background-size: 800px 104px;
-  }
 
   /* Desktop View Enhancements */
   @media (min-width: 768px) {
@@ -311,8 +293,6 @@
     #categorySelect { flex: 1.5; }
     #newCategoryInput { flex: 1.5; }
     .header-buttons { width: auto; flex: 2; }
-    .rest-img { width: 140px; }
-    .rest-content { padding: 16px; }
     ul { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   }
 </style>
@@ -335,7 +315,7 @@
   <div id="list-container"></div>
 
   <script>
-    // --- Data Source with Extracted "Must Haves" --- //
+    // --- Data Source --- //
     const categories = [
       {
         title: "South Indian / Coastal / Seafood",
@@ -359,7 +339,6 @@
         items: [
           { name: "Peshawri", note: "ITC Maratha", loc: "Andheri E", hours: "7:00 PM - 11:30 PM", phone: "+91 22 2830 3030", rating: "4.7", mustHaves: ["Dal Makhani", "Kebabs", "Rotis"] },
           { name: "Sheetal Bukhara", note: "Old school 90s vibes", loc: "Khar West", hours: "12:00 PM - 12:00 AM", phone: "+91 22 2646 2222", rating: "4.3", mustHaves: ["Tandoori Pomfret"] },
-          { name: "Bukhara", note: "Comparison alternative", loc: "New Delhi", hours: "12:30 PM - 11:45 PM", phone: "+91 11 2611 2233", rating: "4.8" },
           { name: "Miya Kebabs", note: "Bandra / Fort", loc: "Bandra West", hours: "12:00 PM - 11:30 PM", phone: "Walk-in", rating: "4.5", mustHaves: ["Lebanese Chicken", "Changezi Chicken"] },
           { name: "Khyber", note: "Fort", loc: "Kala Ghoda", hours: "12:30 PM - 11:30 PM", phone: "+91 22 4039 6666", rating: "4.6", mustHaves: ["Raan"] },
           { name: "Cafe Nur", note: "Mohammad Ali Road", loc: "South Bombay", hours: "5:00 PM - 1:00 AM", phone: "Street Side", rating: "4.2", mustHaves: ["Kebabs"] },
@@ -428,23 +407,6 @@
     ];
 
     function getSafeId(name) { return 'cat-' + name.replace(/[^a-zA-Z0-9]/g, ''); }
-    
-    // Core image generation
-    function getImgSrc(item) {
-      let prompt = 'delicious Indian restaurant food';
-      if (item.mustHaves && item.mustHaves.length > 0) {
-        prompt = `delicious ${item.mustHaves[0]} dish`;
-      } else if (item.name) {
-        prompt = `delicious ${item.name} restaurant food`;
-      }
-      return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=200&height=200&nologo=true`;
-    }
-
-    // Fallback if the primary image generation fails/times out
-    function getFallbackImgSrc(item) {
-      const safeName = encodeURIComponent(item.name.replace(/\s+/g, '').toLowerCase());
-      return `https://picsum.photos/seed/${safeName}/200/200`;
-    }
 
     function populateDropdown() {
       const select = document.getElementById('categorySelect');
@@ -475,7 +437,6 @@
       if (isLoading) {
         return `
           <div class="drag-handle">☰</div>
-          <div class="rest-img"></div>
           <div class="rest-content">
             <div class="rest-header">
               <h3 class="rest-name loading-skeleton" style="width: 150px; height: 24px; margin-bottom:4px;">Loading...</h3>
@@ -500,16 +461,8 @@
         `;
       }
 
-      // Added loading="lazy" and onerror fallback to the image tag!
       return `
         <div class="drag-handle">☰</div>
-        <img 
-          src="${getImgSrc(item)}" 
-          onerror="this.onerror=null; this.src='${getFallbackImgSrc(item)}';" 
-          class="rest-img" 
-          alt="${item.name}" 
-          loading="lazy"
-        >
         <div class="rest-content">
           <div class="rest-header">
             <h3 class="rest-name">${item.name}</h3>
@@ -711,7 +664,6 @@
         addBtn.textContent = "Add Item";
       }
     }
-
 
     // --- Drag and Drop Logic --- //
 
