@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mumbai Restaurant Recommendations (Maps Enabled)</title>
+<title>Mumbai Restaurant Recommendations (Fixed Images)</title>
 <style>
   /* Mobile-first Base Styles */
   * {
@@ -429,6 +429,7 @@
 
     function getSafeId(name) { return 'cat-' + name.replace(/[^a-zA-Z0-9]/g, ''); }
     
+    // Core image generation
     function getImgSrc(item) {
       let prompt = 'delicious Indian restaurant food';
       if (item.mustHaves && item.mustHaves.length > 0) {
@@ -437,6 +438,12 @@
         prompt = `delicious ${item.name} restaurant food`;
       }
       return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=200&height=200&nologo=true`;
+    }
+
+    // Fallback if the primary image generation fails/times out
+    function getFallbackImgSrc(item) {
+      const safeName = encodeURIComponent(item.name.replace(/\s+/g, '').toLowerCase());
+      return `https://picsum.photos/seed/${safeName}/200/200`;
     }
 
     function populateDropdown() {
@@ -493,9 +500,16 @@
         `;
       }
 
+      // Added loading="lazy" and onerror fallback to the image tag!
       return `
         <div class="drag-handle">☰</div>
-        <img src="${getImgSrc(item)}" class="rest-img" alt="${item.name}">
+        <img 
+          src="${getImgSrc(item)}" 
+          onerror="this.onerror=null; this.src='${getFallbackImgSrc(item)}';" 
+          class="rest-img" 
+          alt="${item.name}" 
+          loading="lazy"
+        >
         <div class="rest-content">
           <div class="rest-header">
             <h3 class="rest-name">${item.name}</h3>
@@ -556,12 +570,11 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            // Success: Return exact lat/lng
             callback(`${position.coords.latitude},${position.coords.longitude}`);
           },
           (error) => {
             console.warn("Geolocation failed or denied. Falling back to Google Maps 'My Location'.", error);
-            callback("My Location"); // Fallback allows Google Maps app to resolve location securely
+            callback("My Location"); 
           }
         );
       } else {
@@ -580,7 +593,6 @@
     }
 
     function mapAll() {
-      // Find all names of restaurants that have NOT been removed/crossed-out
       const activeCards = document.querySelectorAll('.rest-card:not(.removed) .rest-name');
       const names = Array.from(activeCards).map(el => el.textContent + ', Mumbai');
       
@@ -590,7 +602,6 @@
       }
 
       getUserLocation((origin) => {
-        // Google Maps allows a maximum of 9 waypoints + 1 destination per directions URL
         const waypoints = names.slice(0, 9);
         const destination = names.length > 9 ? names[9] : waypoints.pop();
         
