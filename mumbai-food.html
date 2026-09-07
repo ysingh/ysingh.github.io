@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mumbai Restaurant Recommendations</title>
+<style>
+  /* Mobile-first base styles */
+  * {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  
+  body {
+    background-color: #f7f8fa;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 16px;
+    line-height: 1.5;
+  }
+
+  /* Sticky top bar for adding new items */
+  .add-item-container {
+    display: flex;
+    gap: 8px;
+    position: sticky;
+    top: 0;
+    background-color: rgba(247, 248, 250, 0.95);
+    padding: 12px 0;
+    z-index: 100;
+    border-bottom: 1px solid #e1e4e8;
+    margin-bottom: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .add-item-container input {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 16px; /* 16px prevents iOS zoom on focus */
+    border: 1px solid #d1d5da;
+    border-radius: 8px;
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .add-item-container button {
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: #0366d6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .add-item-container button:active {
+    background-color: #005cc5;
+  }
+
+  /* List & Category styling */
+  h2 {
+    font-size: 1.25rem;
+    color: #24292e;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eaecef;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(27,31,35,0.1);
+    transition: all 0.3s ease;
+    gap: 12px;
+  }
+
+  .item-text {
+    flex: 1;
+    font-size: 1rem;
+    word-break: break-word;
+    transition: color 0.3s ease;
+  }
+
+  .action-btn {
+    background-color: #ea4a5a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+  }
+
+  .action-btn:active {
+    background-color: #cf222e;
+  }
+
+  /* Crossed out (removed) state styles */
+  li.removed {
+    opacity: 0.5;
+    background-color: #f6f8fa;
+    box-shadow: none;
+    border: 1px solid #eaecef;
+  }
+
+  li.removed .item-text {
+    text-decoration: line-through;
+    color: #6a737d;
+  }
+
+  li.removed .action-btn {
+    background-color: #6a737d;
+  }
+
+  li.removed .action-btn:active {
+    background-color: #586069;
+  }
+
+  /* Desktop breakpoint for slightly better spacing */
+  @media (min-width: 768px) {
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Input area to add new items -->
+  <div class="add-item-container">
+    <input type="text" id="newItemInput" placeholder="Add a new restaurant...">
+    <button onclick="addNewItem()">Add</button>
+  </div>
+
+  <div id="list-container">
+    <h2>South Indian / Coastal / Seafood</h2>
+    <ul>
+      <li><span class="item-text">Trishna (Fort - Seafood)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Rameshwaram Cafe (South Indian - Note: One user recommended it, another advised avoiding it)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Cafe Madras (South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Santosham (South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Mutuswamy (South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Sri Krishna (South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Ramashray (Matunga - South Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Benne / Benne Dosa (Bandra, Girgaon - Dosas)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Kari Apla (Coastal cuisine)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Dakshin (ITC Grand Central, Parel - Kerala thalis)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Maasli</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Tanjore Tiffin Room (Bandra)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+
+    <h2>North Indian / Mughlai / Kebabs</h2>
+    <ul>
+      <li><span class="item-text">Peshawari (ITC Grand Maratha - limited menu, dal makhani, kebabs)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Sheetal Bukhara (Khar - old school North Indian, Tandoori Pomfret)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Bukhara (New Delhi - mentioned as a comparison/alternative to Peshawari)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Miya Kebabs (Bandra, Fort - Lebanese, Changezi chicken, kebabs)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Khyber (Known for their Raan)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Cafe Nur (Kebabs)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Masala Bay (Taj Lands End - North Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Gallops (Known for Yakhni Pulav and kebabs, Indian and Continental)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Gaylord (70-year-old place, good Indian food and vibe)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+
+    <h2>Goan / Portuguese / East Indian</h2>
+    <ul>
+      <li><span class="item-text">O Pedro (Goan/Portuguese fusion, Ceviche)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Sorozai (Poi and Pork Vindaloo)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Freny's (Bandra - Local East Indian cuisine)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+
+    <h2>Modern Indian / Fusion / Experiential</h2>
+    <ul>
+      <li><span class="item-text">The Bombay Canteen (Modern Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Ekaa (Fort - Experimental/Modern Indian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Bandra Born (Bandra - Interesting takes on Indian food)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+
+    <h2>Maharashtrian</h2>
+    <ul>
+      <li><span class="item-text">Chaitanya (Marathi Seafood)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Goa Portuguesa / Diva Maharashtracha (Mahim/Dadar - Marathi/Goan seafood and Marathi cuisine)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Prakash (Dadar/Mahim - Marathi Vegetarian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Aaswad (Dadar/Mahim - Marathi Vegetarian)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Maratha Kitchen</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+
+    <h2>Gujarati / Thalis / Vegetarian</h2>
+    <ul>
+      <li><span class="item-text">Sri Thakar Bhojanalay (Unlimited vegetarian Gujarati thali)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Soam (South Bombay - Gujarati food/Indian vegan)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+
+    <h2>Street Food / Chaat / Snacks</h2>
+    <ul>
+      <li><span class="item-text">Swati Snacks (Nariman Point - Bombay street food)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Bombay Sweet Shop (Indian fusion desserts)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Jai Jawan (Bandra - Fried prawns)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Punjab Sweet House (Bandra - Chaat)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Karachi Sweets (Bandra - Chaat)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Sharma Chaat Bundar (Juhu)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Shiv Sagar (Juhu - OG place, great Pav Bhaji)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Maruti (Known for black Pav Bhaji)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Kwality's (The OG for Frankies)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">The Roll Company (Frankies)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">J-Hearsh (Bandra Hill Road - old school bakery, veg and mutton puffs)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+
+    <h2>Fine Dining / 5-Star Hotel Restaurants</h2>
+    <ul>
+      <li><span class="item-text">Shamiana (Taj Mahal Palace, South Bombay)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">The Bayview (Marine Plaza, South Bombay)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Ziya (The Oberoi, South Bombay)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Pali Bhavan (Eros Theatre, Churchgate - ambience and food)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Melting Pot (Juhu)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+
+    <h2>Indo-Chinese / Continental</h2>
+    <ul>
+      <li><span class="item-text">Ling's Pavilion (Legacy Indo-Chinese)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Jimme's Kitchen (Bandra/Chapel Road - Indo-Chinese)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Wanton House (Bandra/Chapel Road)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+      <li><span class="item-text">Old Street Cafe and Bar (Bandra/Chapel Road)</span><button class="action-btn" onclick="toggleItem(this)">Remove</button></li>
+    </ul>
+  </div>
+
+  <script>
+    // Toggles the dull/crossed out state for an item
+    function toggleItem(button) {
+      const listItem = button.closest('li');
+      listItem.classList.toggle('removed');
+      
+      // Update button text to allow undo functionality
+      if (listItem.classList.contains('removed')) {
+        button.textContent = 'Restore';
+      } else {
+        button.textContent = 'Remove';
+      }
+    }
+
+    // Handles adding a new item from the input field
+    function addNewItem() {
+      const input = document.getElementById('newItemInput');
+      const text = input.value.trim();
+      
+      if (!text) return; // Do nothing if the input is empty
+
+      // Create a "Custom Additions" section if it doesn't exist yet
+      let customSection = document.getElementById('custom-section');
+      if (!customSection) {
+        const container = document.getElementById('list-container');
+        customSection = document.createElement('div');
+        customSection.id = 'custom-section';
+        customSection.innerHTML = '<h2>Added by You</h2><ul id="custom-list"></ul>';
+        // Insert custom section right below the input bar
+        container.insertBefore(customSection, container.firstChild);
+      }
+
+      // Create the new list item
+      const ul = document.getElementById('custom-list');
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span class="item-text">${text}</span>
+        <button class="action-btn" onclick="toggleItem(this)">Remove</button>
+      `;
+      
+      // Add the item to the list and clear the input
+      ul.appendChild(li);
+      input.value = '';
+      
+      // Optionally scroll the new item into view
+      li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Allow pressing "Enter" on the keyboard to add an item
+    document.getElementById('newItemInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        addNewItem();
+      }
+    });
+  </script>
+</body>
+</html>
