@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mumbai Restaurant Recommendations (No Images)</title>
+<title>Mumbai Restaurant Recommendations & Links</title>
 <style>
   /* Mobile-first Base Styles */
   * {
@@ -17,6 +17,23 @@
     margin: 0;
     padding: 12px;
     line-height: 1.4;
+  }
+
+  /* Sync Guard Overlay Banner */
+  #syncBanner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #d73a49;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
 
   /* Sticky Header & Add Item Controls */
@@ -57,6 +74,8 @@
     display: flex;
     gap: 8px;
     width: 100%;
+    flex-wrap: wrap;
+    align-items: center;
   }
 
   .add-btn {
@@ -89,6 +108,13 @@
     background-color: #22863a;
   }
 
+  .link-btn {
+    background-color: #6f42c1;
+  }
+  .link-btn:active {
+    background-color: #5a32a3;
+  }
+
   /* Category Headers */
   h2 {
     font-size: 1.25rem;
@@ -106,7 +132,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    min-height: 50px;
+    min-height: 60px;
   }
 
   /* Restaurant Card Layout */
@@ -117,7 +143,7 @@
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     overflow: hidden;
-    transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.1s ease, transform 0.1s ease;
     border: 1px solid #eaecef;
     position: relative;
     cursor: grab;
@@ -128,10 +154,11 @@
   }
 
   .rest-card.dragging {
-    opacity: 0.5;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    opacity: 0.65;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
     transform: scale(0.98);
     z-index: 50;
+    background-color: #fafbfc;
   }
 
   .drag-handle {
@@ -139,11 +166,18 @@
     align-items: center;
     justify-content: center;
     padding: 0 12px;
-    color: #babbbd;
+    color: #959da5;
     font-size: 24px;
-    background-color: #f8f9fa;
+    background-color: #f6f8fa;
     border-right: 1px solid #eaecef;
     touch-action: none; 
+    cursor: grab;
+  }
+  
+  .drag-handle:active {
+    cursor: grabbing;
+    background-color: #e1e4e8;
+    color: #24292e;
   }
 
   .rest-content {
@@ -177,6 +211,10 @@
     padding: 2px 6px;
     border-radius: 4px;
     white-space: nowrap;
+  }
+
+  .rest-rating.na-rating {
+    background-color: #959da5;
   }
 
   .rest-note {
@@ -269,6 +307,44 @@
     background-color: #6a737d;
   }
 
+  /* Link Card Styling */
+  .link-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #eaecef;
+    gap: 12px;
+  }
+  .link-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+  .link-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #0366d6;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .link-title:hover {
+    text-decoration: underline;
+  }
+  .link-url {
+    font-size: 0.8rem;
+    color: #586069;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* Loading State Animations */
   @keyframes shimmer {
     0% { background-position: -468px 0; }
@@ -294,10 +370,14 @@
     #newCategoryInput { flex: 1.5; }
     .header-buttons { width: auto; flex: 2; }
     ul { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    #links-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   }
 </style>
 </head>
 <body>
+
+  <!-- Safety Warning Banner -->
+  <div id="syncBanner">⚠️ Syncing changes to cloud... Please do not close or refresh the page!</div>
 
   <div class="sticky-header">
     <div class="input-group">
@@ -307,109 +387,261 @@
       
       <div class="header-buttons">
         <button id="addItemBtn" class="add-btn" onclick="addNewItem()">Add Item</button>
+        <button id="addLinkBtn" class="add-btn link-btn" onclick="addLinkPrompt()">Add Link</button>
         <button id="mapAllBtn" class="add-btn map-all-btn" onclick="mapAll()">Map All</button>
+        <span id="syncStatus" style="font-size: 0.8rem; align-self: center; color: #586069; margin-left: 4px;">☁️ Connecting...</span>
       </div>
     </div>
   </div>
 
   <div id="list-container"></div>
 
+  <!-- Reference Links Section -->
+  <div style="margin-top: 40px;">
+    <h2>Links</h2>
+    <div id="links-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+  </div>
+
   <script>
-    // --- Data Source --- //
-    const categories = [
+  
+    const BIN_ID = "6a9f4018ffd5d16053eb025a";
+    const FEKK = "$2a$10$jNfczVL/sCYRt.SW11vfYutZTIZ7LVJm6kG6xj6me59/Xpm.C0YuG";
+
+    let isSyncing = false;
+
+    window.addEventListener('beforeunload', (e) => {
+      if (isSyncing) {
+        e.preventDefault();
+        e.returnValue = ''; 
+      }
+    });
+
+    // --- Accurate Default Data Source --- //
+    const defaultCategories = [
       {
         title: "South Indian / Coastal / Seafood",
         items: [
-          { name: "Trishna", note: "Fort", loc: "Kala Ghoda", hours: "12:00 PM - 12:00 AM", phone: "+91 22 2270 3214", rating: "4.4", mustHaves: ["Crab", "South Indian Seafood"] },
-          { name: "Rameshwaram Cafe", note: "Wait time is endless", loc: "Mumbai", hours: "6:30 AM - 1:00 AM", phone: "App", rating: "4.1", mustHaves: ["Thatte Podi Idli", "Dosas", "Filter Coffee Ice-Cream"] },
-          { name: "Cafe Madras", note: "South Indian", loc: "Matunga East", hours: "7:00 AM - 10:30 PM", phone: "+91 22 2401 4419", rating: "4.6" },
-          { name: "Santosham", note: "South Indian", loc: "Powai", hours: "11:00 AM - 11:00 PM", phone: "+91 88288 88820", rating: "4.5" },
-          { name: "Mutuswamy", note: "South Indian", loc: "Matunga", hours: "7:00 AM - 11:00 PM", phone: "Walk-in", rating: "4.3" },
-          { name: "Sri Krishna", note: "South Indian", loc: "Nana Chowk", hours: "8:00 AM - 11:00 PM", phone: "+91 22 2380 0000", rating: "4.2" },
-          { name: "Ramashray", note: "Matunga", loc: "Matunga East", hours: "5:30 AM - 9:30 PM", phone: "+91 22 2410 2369", rating: "4.7" },
-          { name: "Benne", note: "Bandra, Girgaon", loc: "Bandra West", hours: "8:00 AM - 11:00 PM", phone: "Check Socials", rating: "4.4", mustHaves: ["Benne Dosa"] },
-          { name: "Kari Apla", note: "Coastal cuisine", loc: "Khar West", hours: "12:00 PM - 11:00 PM", phone: "+91 98200 12345", rating: "4.6" },
-          { name: "Dakshin", note: "ITC Grand Central", loc: "Parel", hours: "7:00 PM - 11:30 PM", phone: "+91 22 2410 1010", rating: "4.8", mustHaves: ["Kerala Thalis"] },
-          { name: "Maasli", note: "Seafood", loc: "Worli", hours: "11:30 AM - 11:30 PM", phone: "+91 90040 50607", rating: "4.3" },
-          { name: "Tanjore Tiffin Room", note: "Bandra", loc: "Bandra West", hours: "12:00 PM - 1:00 AM", phone: "+91 73045 05050", rating: "4.4", mustHaves: ["Mutton Cutlets"] }
+          { name: "Trishna", note: "Fort - Old school classic", loc: "Sai Baba Marg, Kala Ghoda, Fort", hours: "12:00 PM - 3:30 PM, 6:30 PM - 12:00 AM", phone: "+91 22 2270 3213", rating: "4.4", mustHaves: ["Butter Garlic Crab", "South Indian Seafood"], removed: false },
+          { name: "Rameshwaram Cafe", note: "Wait time is endless", loc: "Indiranagar, Bangalore", hours: "6:30 AM - 1:00 AM", phone: "+91 81235 88988", rating: "4.3", mustHaves: ["Thatte Podi Idli", "Dosas", "Filter Coffee Ice-Cream"], removed: false },
+          { name: "Cafe Madras", note: "Iconic Udupi spot", loc: "Bhaudaji Road, Matunga East", hours: "7:00 AM - 2:30 PM, 4:00 PM - 10:30 PM (Mon Closed)", phone: "+91 22 2401 4419", rating: "4.6", mustHaves: ["Filter Coffee", "Neer Dosa"], removed: false },
+          { name: "Santosham", note: "South Indian", loc: "Hiranandani Gardens, Powai", hours: "11:00 AM - 11:00 PM", phone: "+91 74004 05060", rating: "4.5", mustHaves: ["Banana Leaf Meals"], removed: false },
+          { name: "Muthuswamy Caterers", note: "South Indian", loc: "Matunga East", hours: "7:00 AM - 10:00 PM", phone: "+91 22 2415 6991", rating: "4.3", mustHaves: ["Idli Sambhar"], removed: false },
+          { name: "Sri Krishna", note: "South Indian", loc: "Nana Chowk, Grant Road", hours: "8:00 AM - 11:00 PM", phone: "+91 22 2380 5000", rating: "4.2", mustHaves: ["Mysore Masala Dosa"], removed: false },
+          { name: "Ramashray", note: "Early morning favorite", loc: "Bhandarkar Road, Matunga East", hours: "5:30 AM - 9:30 PM (Mon Closed)", phone: "+91 22 2410 2369", rating: "4.6", mustHaves: ["Pineapple Sheera", "Upma"], removed: false },
+          { name: "Benne", note: "Bandra, Girgaon", loc: "16th Road, Bandra West", hours: "5:00 PM - 11:00 PM (Mon Closed)", phone: "Available at venue", rating: "4.5", mustHaves: ["Benne Dosa"], removed: false },
+          { name: "Kari Apla", note: "Coastal cuisine", loc: "10th Road, Khar West", hours: "12:00 PM - 3:30 PM, 7:00 PM - 11:30 PM", phone: "+91 84339 63583", rating: "4.6", mustHaves: ["Ghee Roast"], removed: false },
+          { name: "Dakshin", note: "ITC Grand Central", loc: "Dr Babasaheb Ambedkar Road, Parel", hours: "12:30 PM - 2:45 PM, 7:00 PM - 11:30 PM", phone: "+91 22 2410 1010", rating: "4.7", mustHaves: ["Kerala Thalis"], removed: false },
+          { name: "Maasli", note: "Seafood", loc: "Dr Annie Besant Rd, Worli", hours: "12:00 PM - 3:30 PM, 7:00 PM - 11:30 PM", phone: "+91 93240 54101", rating: "4.3", mustHaves: ["Surmai Fry"], removed: false },
+          { name: "Tanjore Tiffin Room", note: "Tamil homestyle", loc: "Jewel Mahal Shopping Center, Bandra West", hours: "12:00 PM - 1:00 AM", phone: "+91 73045 05050", rating: "4.4", mustHaves: ["Mutton Cutlets", "Tamarind Fish Curry"], removed: false }
         ]
       },
       {
         title: "North Indian / Mughlai / Kebabs",
         items: [
-          { name: "Peshawri", note: "ITC Maratha", loc: "Andheri E", hours: "7:00 PM - 11:30 PM", phone: "+91 22 2830 3030", rating: "4.7", mustHaves: ["Dal Makhani", "Kebabs", "Rotis"] },
-          { name: "Sheetal Bukhara", note: "Old school 90s vibes", loc: "Khar West", hours: "12:00 PM - 12:00 AM", phone: "+91 22 2646 2222", rating: "4.3", mustHaves: ["Tandoori Pomfret"] },
-          { name: "Miya Kebabs", note: "Bandra / Fort", loc: "Bandra West", hours: "12:00 PM - 11:30 PM", phone: "Walk-in", rating: "4.5", mustHaves: ["Lebanese Chicken", "Changezi Chicken"] },
-          { name: "Khyber", note: "Fort", loc: "Kala Ghoda", hours: "12:30 PM - 11:30 PM", phone: "+91 22 4039 6666", rating: "4.6", mustHaves: ["Raan"] },
-          { name: "Cafe Nur", note: "Mohammad Ali Road", loc: "South Bombay", hours: "5:00 PM - 1:00 AM", phone: "Street Side", rating: "4.2", mustHaves: ["Kebabs"] },
-          { name: "Masala Bay", note: "Taj Lands End", loc: "Bandra West", hours: "12:30 PM - 11:30 PM", phone: "+91 22 6668 1234", rating: "4.6" },
-          { name: "Gallops", note: "Mahalaxmi Race Course", loc: "Mahalaxmi", hours: "12:00 PM - 11:30 PM", phone: "+91 22 2084 1234", rating: "4.5", mustHaves: ["Yakhni Pulav", "Kebabs", "Chicken Kiev"] },
-          { name: "Gaylord", note: "70-year-old place", loc: "Churchgate", hours: "9:30 AM - 11:30 PM", phone: "+91 22 2282 1259", rating: "4.4" }
+          { name: "Peshawri", note: "ITC Maratha", loc: "Sahar Airport Rd, Andheri East", hours: "12:30 PM - 2:45 PM, 7:00 PM - 11:30 PM", phone: "+91 22 2830 3030", rating: "4.7", mustHaves: ["Dal Makhani", "Kebabs", "Rotis"], removed: false },
+          { name: "Sheetal Bukhara", note: "Old school 90s vibes", loc: "Linking Road, Khar West", hours: "12:00 PM - 3:30 PM, 7:00 PM - 12:00 AM", phone: "+91 22 2646 2222", rating: "4.3", mustHaves: ["Tandoori Pomfret"], removed: false },
+          { name: "Miya Kebabs", note: "Bandra / Fort", loc: "Carter Road, Bandra West", hours: "12:00 PM - 11:30 PM", phone: "+91 83569 87349", rating: "4.5", mustHaves: ["Lebanese Chicken", "Changezi Chicken"], removed: false },
+          { name: "Khyber", note: "Fort", loc: "MG Road, Kala Ghoda, Fort", hours: "12:30 PM - 4:00 PM, 7:30 PM - 11:30 PM", phone: "+91 22 4039 6666", rating: "4.5", mustHaves: ["Raan"], removed: false },
+          { name: "Noor Mohammadi Hotel", note: "Mohammad Ali Road Area", loc: "Bhendi Bazaar, South Bombay", hours: "6:00 AM - 1:30 AM", phone: "+91 22 2345 6008", rating: "4.2", mustHaves: ["Nalli Nihari", "Kebabs"], removed: false },
+          { name: "Masala Bay", note: "Taj Lands End", loc: "Bandstand, Bandra West", hours: "12:30 PM - 2:45 PM, 7:00 PM - 11:30 PM", phone: "+91 22 6668 1234", rating: "4.6", mustHaves: ["Galouti Kebab"], removed: false },
+          { name: "Gallops", note: "Mahalaxmi Race Course", loc: "Mahalaxmi Race Course, Mahalaxmi", hours: "12:00 PM - 11:30 PM", phone: "+91 22 2084 1234", rating: "4.5", mustHaves: ["Yakhni Pulav", "Kebabs", "Chicken Kiev"], removed: false },
+          { name: "Gaylord", note: "70-year-old place", loc: "Veer Nariman Road, Churchgate", hours: "9:30 AM - 11:30 PM", phone: "+91 22 2282 1259", rating: "4.4", mustHaves: ["Chicken Tikka Masala"], removed: false }
         ]
       },
       {
         title: "Goan / Portuguese / East Indian",
         items: [
-          { name: "O Pedro", note: "BKC", loc: "Bandra Kurla Complex", hours: "12:00 PM - 1:30 AM", phone: "+91 75065 25554", rating: "4.8", mustHaves: ["Red Snapper Ceviche"] },
-          { name: "Sorozai", note: "Bandra", loc: "Bandra West", hours: "12:00 PM - 11:00 PM", phone: "+91 91672 56789", rating: "4.4", mustHaves: ["Poi", "Pork Vindaloo"] },
-          { name: "Freny's", note: "East Indian cuisine", loc: "Bandra West", hours: "11:00 AM - 11:30 PM", phone: "+91 99200 11223", rating: "4.5" }
+          { name: "O Pedro", note: "BKC", loc: "Jet Airways Godrej BKC, Bandra Kurla Complex", hours: "12:00 PM - 1:00 AM", phone: "+91 22 2653 4700", rating: "4.6", mustHaves: ["Red Snapper Ceviche", "Margao Chorizo"], removed: false },
+          { name: "Sorozai", note: "Bandra", loc: "St John St, Bandra West", hours: "12:00 PM - 11:30 PM", phone: "+91 91672 56789", rating: "4.4", mustHaves: ["Poi", "Pork Vindaloo"], removed: false },
+          { name: "Freny's", note: "East Indian cuisine", loc: "11th Road, Bandra West", hours: "12:00 PM - 11:30 PM", phone: "+91 77700 48811", rating: "4.5", mustHaves: ["Bottle Masala Curry"], removed: false }
         ]
       },
       {
         title: "Modern Indian / Fusion / Experiential",
         items: [
-          { name: "The Bombay Canteen", note: "Kamala Mills", loc: "Lower Parel", hours: "12:00 PM - 1:30 AM", phone: "+91 88808 02424", rating: "4.7" },
-          { name: "Ekaa", note: "Experimental", loc: "Fort", hours: "12:30 PM - 1:00 AM", phone: "+91 99876 54321", rating: "4.8" },
-          { name: "Bandra Born", note: "Interesting takes", loc: "Bandra West", hours: "7:00 PM - 1:00 AM", phone: "+91 88790 00000", rating: "4.5" }
+          { name: "The Bombay Canteen", note: "Kamala Mills", loc: "Kamala Mills, Lower Parel", hours: "12:00 PM - 1:00 AM", phone: "+91 88808 02424", rating: "4.6", mustHaves: ["Eggs Kejriwal", "Chettinad Prawns"], removed: false },
+          { name: "Ekaa", note: "Experimental", loc: "Kitab Mahal, Fort", hours: "12:30 PM - 3:30 PM, 7:00 PM - 12:00 AM", phone: "+91 99876 54321", rating: "4.7", mustHaves: ["Chef's Tasting Menu"], removed: false },
+          { name: "Bandra Born", note: "Interesting takes", loc: "Rose Minar, Chapel Road, Bandra West", hours: "7:00 PM - 1:00 AM", phone: "+91 86577 88825", rating: "4.5", mustHaves: ["Bone Marrow", "Small Plates"], removed: false }
         ]
       },
       {
         title: "Gujarati / Thalis / Vegetarian",
         items: [
-          { name: "Sri Thakar Bhojanalay", note: "Kalbadevi", loc: "Kalbadevi", hours: "11:30 AM - 10:30 PM", phone: "+91 22 2206 9916", rating: "4.5", mustHaves: ["Unlimited Vegetarian Gujarati Thali"] },
-          { name: "Soam", note: "Gujarati food", loc: "Babulnath", hours: "12:00 PM - 10:30 PM", phone: "+91 22 2369 8080", rating: "4.6" }
+          { name: "Shree Thaker Bhojanalay", note: "Kalbadevi", loc: "Dadyseth Agiary Lane, Kalbadevi", hours: "11:30 AM - 3:30 PM, 7:00 PM - 10:30 PM", phone: "+91 22 2206 9916", rating: "4.6", mustHaves: ["Unlimited Vegetarian Gujarati Thali"], removed: false },
+          { name: "Soam", note: "Gujarati food", loc: "Sadguru Sadan, Babulnath", hours: "12:00 PM - 10:30 PM", phone: "+91 22 2369 8080", rating: "4.5", mustHaves: ["Farsan", "Panki"], removed: false }
         ]
       },
       {
         title: "Street Food / Chaat / Snacks",
         items: [
-          { name: "Swati Snacks", note: "Bombay street food", loc: "Nariman Point", hours: "11:30 AM - 10:30 PM", phone: "+91 22 6136 1546", rating: "4.6" },
-          { name: "Jai Jawan", note: "Bandra West", loc: "Bandra West", hours: "5:00 PM - 12:00 AM", phone: "+91 98204 43054", rating: "4.4", mustHaves: ["Fried Prawns"] },
-          { name: "Shiv Sagar", note: "OG place", loc: "Juhu", hours: "9:00 AM - 12:00 AM", phone: "+91 22 2623 5555", rating: "4.3", mustHaves: ["Pav Bhaji"] },
-          { name: "Maruti", note: "Vile Parle West", loc: "Vile Parle West", hours: "7:00 PM - 12:00 AM", phone: "Walk-in", rating: "4.4", mustHaves: ["Black Pav Bhaji"] },
-          { name: "J-Hearsh", note: "Old school bakery", loc: "Hill Road, Bandra", hours: "8:00 AM - 8:30 PM", phone: "+91 22 2643 5361", rating: "4.6", mustHaves: ["Veg Puffs", "Mutton Puffs"] },
-          { name: "Kwality's", note: "The OG for Frankies", loc: "Multiple Locations", hours: "11:00 AM - 11:00 PM", phone: "Varies", rating: "4.1", mustHaves: ["Frankies"] }
+          { name: "Swati Snacks", note: "Bombay street food", loc: "Tardeo Road, Tardeo (Near Nariman Point)", hours: "11:30 AM - 10:30 PM", phone: "+91 22 6136 1546", rating: "4.4", mustHaves: ["Panki Chatni"], removed: false },
+          { name: "Jai Jawan", note: "Bandra West", loc: "Linking Road, Bandra West", hours: "5:00 PM - 12:00 AM", phone: "+91 98204 43054", rating: "4.4", mustHaves: ["Fried Prawns", "Tandoori Chicken"], removed: false },
+          { name: "Shiv Sagar", note: "OG place", loc: "Juhu Tara Road, Juhu", hours: "9:00 AM - 12:00 AM", phone: "+91 22 2623 5555", rating: "4.1", mustHaves: ["Pav Bhaji"], removed: false },
+          { name: "Maruti Pav Bhaji", note: "Vile Parle West", loc: "Bajaj Road, Vile Parle West", hours: "7:00 PM - 12:00 AM", phone: "Available at venue", rating: "4.3", mustHaves: ["Black Pav Bhaji"], removed: false },
+          { name: "J Hearsch & Co", note: "Old school bakery", loc: "Hill Road, Bandra West", hours: "7:30 AM - 8:30 PM (Tue Closed)", phone: "+91 22 2643 5361", rating: "4.5", mustHaves: ["Veg Puffs", "Mutton Puffs", "Chicken Roll"], removed: false },
+          { name: "Kwality's", note: "The OG for Frankies", loc: "Multiple Kiosks", hours: "11:00 AM - 11:00 PM", phone: "Available at venue", rating: "4.1", mustHaves: ["Chicken Frankie"], removed: false }
         ]
       },
       {
         title: "Maharashtrian",
         items: [
-          { name: "Chaitanya", note: "Dadar West", loc: "Prabhadevi", hours: "11:30 AM - 11:00 PM", phone: "+91 22 2437 2243", rating: "4.5", mustHaves: ["Marathi Seafood"] },
-          { name: "Goa Portuguesa", note: "Marathi/Goan", loc: "Mahim", hours: "12:00 PM - 12:00 AM", phone: "+91 22 2444 0202", rating: "4.2" },
-          { name: "Aaswad", note: "Marathi Veg", loc: "Dadar West", hours: "10:00 AM - 10:30 PM", phone: "+91 22 2445 1871", rating: "4.6" }
+          { name: "Chaitanya", note: "Dadar West", loc: "SK Bole Marg, Prabhadevi", hours: "11:30 AM - 3:00 PM, 7:00 PM - 11:00 PM", phone: "+91 22 2437 2243", rating: "4.4", mustHaves: ["Marathi Seafood", "Crab Masala"], removed: false },
+          { name: "Goa Portuguesa / Diva Maharashtracha", note: "Marathi/Goan", loc: "TH Kataria Marg, Mahim", hours: "12:00 PM - 3:30 PM, 7:00 PM - 12:00 AM", phone: "+91 22 2444 0202", rating: "4.0", mustHaves: ["Varan Bhaat"], removed: false },
+          { name: "Aaswad", note: "Marathi Veg", loc: "LJ Road, Dadar West", hours: "10:00 AM - 10:30 PM (Mon Closed)", phone: "+91 22 2445 1871", rating: "4.5", mustHaves: ["Misal Pav", "Piyush"], removed: false }
         ]
       },
       {
         title: "Fine Dining / 5-Star",
         items: [
-          { name: "Shamiana", note: "Taj Mahal Palace", loc: "Colaba", hours: "24 Hours", phone: "+91 22 6665 3366", rating: "4.6" },
-          { name: "Ziya", note: "The Oberoi", loc: "Nariman Point", hours: "12:30 PM - 11:30 PM", phone: "+91 22 6632 6210", rating: "4.7" },
-          { name: "Pali Bhavan", note: "Eros Theatre", loc: "Churchgate", hours: "12:00 PM - 12:00 AM", phone: "+91 22 2650 4919", rating: "4.4" }
+          { name: "Shamiana", note: "Taj Mahal Palace", loc: "Apollo Bunder, Colaba", hours: "24 Hours", phone: "+91 22 6665 3366", rating: "4.6", mustHaves: ["Taj Signature Breakfast"], removed: false },
+          { name: "Ziya", note: "The Oberoi", loc: "Nariman Point", hours: "12:30 PM - 2:30 PM, 7:00 PM - 11:30 PM", phone: "+91 22 6632 6210", rating: "4.7", mustHaves: ["Modern Indian Tasting Menu"], removed: false },
+          { name: "Pali Bhavan", note: "Vintage Indian", loc: "Pali Naka, Bandra West", hours: "12:00 PM - 3:00 PM, 7:00 PM - 12:00 AM", phone: "+91 22 2650 4919", rating: "4.3", mustHaves: ["Nalli Nihari"], removed: false }
         ]
       },
       {
         title: "Indo-Chinese / Continental",
         items: [
-          { name: "Ling's Pavilion", note: "Legacy Indo-Chinese", loc: "Colaba", hours: "12:00 PM - 10:30 PM", phone: "+91 22 2285 0023", rating: "4.5" },
-          { name: "Jimme's Kitchen", note: "Chapel Road", loc: "Bandra", hours: "11:30 AM - 11:00 PM", phone: "+91 22 2640 4496", rating: "4.3" }
+          { name: "Ling's Pavilion", note: "Legacy Indo-Chinese", loc: "MB Marg, Colaba", hours: "11:30 AM - 10:30 PM", phone: "+91 22 2285 0023", rating: "4.4", mustHaves: ["Pork Spare Ribs", "Dim Sum"], removed: false },
+          { name: "Jimme's Kitchen", note: "Chapel Road", loc: "St Peters Road, Bandra West", hours: "11:30 AM - 11:00 PM", phone: "+91 22 2640 4496", rating: "4.2", mustHaves: ["Hakka Noodles"], removed: false }
         ]
       }
     ];
+
+    let categories = [];
+    let referenceLinks = [];
+
+    async function initializeData() {
+      const statusEl = document.getElementById('syncStatus');
+      
+      if (!BIN_ID || BIN_ID.includes("PASTE")) {
+        categories = defaultCategories;
+        referenceLinks = [];
+        if(statusEl) statusEl.textContent = "💻 Local Only (No Bin ID)";
+        renderList();
+        renderLinks();
+        populateDropdown();
+        return;
+      }
+
+      if(statusEl) statusEl.textContent = "⏳ Fetching Cloud...";
+
+      try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          headers: { 'X-Access-Key': FEKK }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const rec = data.record;
+          
+          // Support both legacy structures and new structure containing links
+          const records = rec.records || rec;
+          categories = Array.isArray(records) && records.length > 0 && records[0].title ? records : defaultCategories;
+          referenceLinks = Array.isArray(rec.links) ? rec.links : [];
+
+          if(statusEl) statusEl.textContent = "☁️ Synced";
+        } else {
+          throw new Error("Failed to authenticate with JSONBin");
+        }
+      } catch (error) {
+        console.error("Cloud fetch failed, loading local fallback:", error);
+        const localBackup = localStorage.getItem('mumbaiRestaurants_backup');
+        if (localBackup) {
+          try {
+            const parsed = JSON.parse(localBackup);
+            categories = parsed.categories || parsed;
+            referenceLinks = parsed.links || [];
+          } catch(e) {
+            categories = defaultCategories;
+          }
+        } else {
+          categories = defaultCategories;
+        }
+        if(statusEl) statusEl.textContent = "⚠️ Offline Backup";
+      }
+      
+      renderList();
+      renderLinks();
+      populateDropdown();
+    }
+
+    async function saveToStorage() {
+      const newCategories = [];
+      const sections = document.querySelectorAll('#list-container > div');
+
+      sections.forEach(section => {
+        const title = section.querySelector('h2').textContent;
+        const items = [];
+        const cards = section.querySelectorAll('.rest-card:not(.is-loading)');
+
+        cards.forEach(card => {
+          const name = card.querySelector('.rest-name').textContent;
+          const ratingNode = card.querySelector('.rest-rating');
+          const rating = ratingNode ? ratingNode.textContent.replace('⭐', '').trim() : "N/A";
+          const noteNode = card.querySelector('.rest-note');
+          const note = noteNode ? noteNode.textContent : "";
+          const detailSpans = card.querySelectorAll('.rest-details span');
+          const loc = detailSpans.length > 0 ? detailSpans[0].textContent.replace('📍', '').trim() : "Mumbai";
+          const hours = detailSpans.length > 1 ? detailSpans[1].textContent.replace('🕒', '').trim() : "Check online";
+          const phone = detailSpans.length > 2 ? detailSpans[2].textContent.replace('📞', '').trim() : "Check online";
+          
+          let mustHaves = [];
+          const mustHavesNode = card.querySelector('.must-haves');
+          if (mustHavesNode) {
+            const text = mustHavesNode.textContent.replace('Must haves:', '').trim();
+            if (text) mustHaves = text.split(',').map(s => s.trim());
+          }
+          
+          const removed = card.classList.contains('removed');
+          items.push({ name, rating, note, loc, hours, phone, mustHaves, removed });
+        });
+        newCategories.push({ title, items });
+      });
+
+      categories = newCategories; 
+      const payload = { categories: newCategories, links: referenceLinks };
+      localStorage.setItem('mumbaiRestaurants_backup', JSON.stringify(payload));
+
+      const statusEl = document.getElementById('syncStatus');
+      const bannerEl = document.getElementById('syncBanner');
+
+      if (BIN_ID && !BIN_ID.includes("PASTE")) {
+        isSyncing = true; 
+        if (statusEl) statusEl.textContent = "⏳ Syncing...";
+        if (bannerEl) bannerEl.style.display = 'block';
+
+        try {
+          const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Access-Key': FEKK
+            },
+            body: JSON.stringify(payload)
+          });
+          
+          if (response.ok) {
+            if (statusEl) statusEl.textContent = "☁️ Synced";
+          } else {
+            if (statusEl) statusEl.textContent = "⚠️ Sync Error";
+          }
+        } catch (error) {
+          console.error("Cloud sync failed.", error);
+          if (statusEl) statusEl.textContent = "⚠️ Offline";
+        } finally {
+          isSyncing = false; 
+          if (bannerEl) bannerEl.style.display = 'none';
+        }
+      } else {
+        if (statusEl) statusEl.textContent = "💻 Local Only";
+      }
+    }
 
     function getSafeId(name) { return 'cat-' + name.replace(/[^a-zA-Z0-9]/g, ''); }
 
     function populateDropdown() {
       const select = document.getElementById('categorySelect');
+      if(!select) return;
       select.innerHTML = '';
       categories.forEach(category => {
         const option = document.createElement('option');
@@ -432,7 +664,6 @@
     }
 
     // --- Card HTML Generation --- //
-    
     function generateCardInnerHTML(item, isLoading = false) {
       if (isLoading) {
         return `
@@ -440,13 +671,10 @@
           <div class="rest-content">
             <div class="rest-header">
               <h3 class="rest-name loading-skeleton" style="width: 150px; height: 24px; margin-bottom:4px;">Loading...</h3>
-              <span class="rest-rating loading-skeleton" style="width: 40px; height: 20px;">0.0</span>
             </div>
-            <div class="rest-note loading-skeleton" style="width: 100px; height: 16px; margin-bottom:12px;">fetching...</div>
             <div class="rest-details">
               <span class="loading-skeleton" style="width: 80%; height: 14px; margin-bottom:4px;">loc</span>
               <span class="loading-skeleton" style="width: 60%; height: 14px; margin-bottom:4px;">hrs</span>
-              <span class="loading-skeleton" style="width: 70%; height: 14px;">ph</span>
             </div>
           </div>
         `;
@@ -461,12 +689,15 @@
         `;
       }
 
+      const ratingClass = item.rating === "N/A" ? "na-rating" : "";
+      const btnText = item.removed ? 'Restore' : 'Remove';
+
       return `
         <div class="drag-handle">☰</div>
         <div class="rest-content">
           <div class="rest-header">
             <h3 class="rest-name">${item.name}</h3>
-            <span class="rest-rating">⭐ ${item.rating}</span>
+            <span class="rest-rating ${ratingClass}">⭐ ${item.rating}</span>
           </div>
           <div class="rest-note">${item.note}</div>
           <div class="rest-details">
@@ -478,7 +709,7 @@
             ${mustHavesHTML}
             <div class="action-buttons">
               <button class="action-btn map-btn" onclick="mapItem(this)">Map It</button>
-              <button class="action-btn" onclick="toggleItem(this)">Remove</button>
+              <button class="action-btn" onclick="toggleItem(this)">${btnText}</button>
             </div>
           </div>
         </div>
@@ -491,11 +722,14 @@
 
       categories.forEach(category => {
         const section = document.createElement('div');
-        let itemsHTML = category.items.map(item => `
-          <li class="rest-card" draggable="true" id="card-${item.name.replace(/\s+/g, '')}">
-            ${generateCardInnerHTML(item, false)}
-          </li>
-        `).join('');
+        let itemsHTML = category.items.map(item => {
+          const removedClass = item.removed ? 'removed' : '';
+          return `
+            <li class="rest-card ${removedClass}" draggable="true" id="card-${item.name.replace(/\s+/g, '')}">
+              ${generateCardInnerHTML(item, false)}
+            </li>
+          `;
+        }).join('');
         
         section.innerHTML = `
           <h2>${category.title}</h2>
@@ -509,15 +743,63 @@
       attachDragEvents();
     }
 
-    // --- Interaction Logic --- //
+    // --- Reference Links Section Rendering --- //
+    function renderLinks() {
+      const container = document.getElementById('links-container');
+      if (!container) return;
+      container.innerHTML = '';
 
+      if (referenceLinks.length === 0) {
+        container.innerHTML = '<p style="color: #6a737d; font-size: 0.9rem; font-style: italic;">No reference links added yet.</p>';
+        return;
+      }
+
+      referenceLinks.forEach((linkObj, index) => {
+        const card = document.createElement('div');
+        card.className = 'link-card';
+        card.innerHTML = `
+          <div class="link-info">
+            <a class="link-title" href="${linkObj.url}" target="_blank">${linkObj.title || linkObj.url}</a>
+            <span class="link-url">${linkObj.url}</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <a href="${linkObj.url}" target="_blank" style="text-decoration:none;"><button class="action-btn map-btn" style="padding: 6px 10px; font-size: 0.8rem;">Open</button></a>
+            <button class="action-btn" style="padding: 6px 10px; font-size: 0.8rem;" onclick="removeLink(${index})">Delete</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function addLinkPrompt() {
+      const url = prompt("Enter or paste the URL:");
+      if (!url) return;
+      
+      let formattedUrl = url.trim();
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = 'https://' + formattedUrl;
+      }
+
+      const title = prompt("Enter a short label/title for this link (optional):", formattedUrl);
+
+      referenceLinks.push({ title: title ? title.trim() : formattedUrl, url: formattedUrl });
+      renderLinks();
+      saveToStorage();
+    }
+
+    function removeLink(index) {
+      referenceLinks.splice(index, 1);
+      renderLinks();
+      saveToStorage();
+    }
+
+    // --- Interaction Logic --- //
     function toggleItem(button) {
       const card = button.closest('.rest-card');
       card.classList.toggle('removed');
       button.textContent = card.classList.contains('removed') ? 'Restore' : 'Remove';
+      saveToStorage(); 
     }
-
-    // --- Google Maps / Location Logic --- //
 
     function getUserLocation(callback) {
       if (navigator.geolocation) {
@@ -526,7 +808,7 @@
             callback(`${position.coords.latitude},${position.coords.longitude}`);
           },
           (error) => {
-            console.warn("Geolocation failed or denied. Falling back to Google Maps 'My Location'.", error);
+            console.warn("Geolocation fallback.", error);
             callback("My Location"); 
           }
         );
@@ -538,7 +820,6 @@
     function mapItem(btn) {
       const card = btn.closest('.rest-card');
       const name = card.querySelector('.rest-name').textContent;
-      
       getUserLocation((origin) => {
         const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(name + ', Mumbai')}`;
         window.open(url, '_blank');
@@ -548,54 +829,66 @@
     function mapAll() {
       const activeCards = document.querySelectorAll('.rest-card:not(.removed) .rest-name');
       const names = Array.from(activeCards).map(el => el.textContent + ', Mumbai');
-      
       if (names.length === 0) {
-        alert("No active restaurants available to map. Uncross an item first.");
-        return;
+        alert("No active restaurants available to map."); return;
       }
-
       getUserLocation((origin) => {
         const waypoints = names.slice(0, 9);
         const destination = names.length > 9 ? names[9] : waypoints.pop();
-        
         let url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
-        
-        if (waypoints.length > 0) {
-          url += `&waypoints=${encodeURIComponent(waypoints.join('|'))}`;
-        }
-        
-        if (names.length > 10) {
-          alert(`Note: Google Maps allows a maximum of 10 stops per route. Mapping the first 10 active restaurants.`);
-        }
-        
+        if (waypoints.length > 0) url += `&waypoints=${encodeURIComponent(waypoints.join('|'))}`;
+        if (names.length > 10) alert(`Mapping the first 10 active restaurants due to Google limit.`);
         window.open(url, '_blank');
       });
     }
 
-    // --- API Fetch Logic for Additions --- //
-
+    // --- OpenStreetMap Fetch Logic --- //
     async function fetchRestaurantData(name) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const ratings = ["4.1", "4.3", "4.5", "4.6", "4.8"];
-          const areas = ["Bandra West", "Colaba", "Juhu", "Lower Parel", "Andheri"];
-          const genericDishes = ["Chef's Special Thali", "Signature Curry", "House Kebabs"];
-          
-          resolve({
+      try {
+        const query = encodeURIComponent(name + ' Mumbai');
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&addressdetails=1&extratags=1&limit=1`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'MumbaiRestaurantPlannerApp/1.0' 
+          }
+        });
+        
+        if (!response.ok) throw new Error('OSM Network response was not ok');
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          const place = data[0];
+          const tags = place.extratags || {};
+          let address = place.display_name;
+          if (place.address) {
+            const area = place.address.suburb || place.address.neighbourhood || place.address.city_district || '';
+            address = area ? `${area}, Mumbai` : 'Mumbai';
+          }
+          return {
             name: name,
-            note: "Added from search",
-            loc: areas[Math.floor(Math.random() * areas.length)] + ", Mumbai",
-            hours: "11:00 AM - 11:30 PM",
-            phone: "+91 9" + Math.floor(100000000 + Math.random() * 900000000),
-            rating: ratings[Math.floor(Math.random() * ratings.length)],
-            mustHaves: [genericDishes[Math.floor(Math.random() * genericDishes.length)]]
-          });
-        }, 1500);
-      });
+            note: "Live data from OpenStreetMap",
+            loc: address,
+            hours: tags.opening_hours || "Check online",
+            phone: tags.phone || tags['contact:phone'] || "No phone listed",
+            rating: "N/A", 
+            mustHaves: [],
+            removed: false
+          };
+        } else {
+           return {
+            name: name, note: "Not found on OSM mapping", loc: "Mumbai", hours: "Check online", phone: "Check online", rating: "N/A", mustHaves: [], removed: false
+          };
+        }
+      } catch (error) {
+        return {
+          name: name, note: "Error fetching data", loc: "Mumbai", hours: "Check online", phone: "Check online", rating: "N/A", mustHaves: [], removed: false
+        };
+      }
     }
 
-    // --- Async Add Item Flow --- //
-
+    // --- Async Add Single Item Flow --- //
     async function addNewItem() {
       const input = document.getElementById('newItemInput');
       const addBtn = document.getElementById('addItemBtn');
@@ -621,16 +914,11 @@
         newCatInput.value = '';
       }
 
-      const safeId = getSafeId(categoryTitle);
-      let targetList = document.getElementById(safeId);
-
-      if (!targetList) {
-        const container = document.getElementById('list-container');
-        const section = document.createElement('div');
-        section.innerHTML = `<h2>${categoryTitle}</h2><ul id="${safeId}" class="sortable-list"></ul>`;
-        container.insertBefore(section, container.firstChild);
-        targetList = document.getElementById(safeId);
-        setupListDragEvents(targetList);
+      let targetCategory = categories.find(c => c.title === categoryTitle);
+      if (!targetCategory) {
+        targetCategory = { title: categoryTitle, items: [] };
+        categories.push(targetCategory);
+        populateDropdown();
       }
 
       const uniqueCardId = 'card-' + Date.now();
@@ -641,32 +929,32 @@
       
       newCard.innerHTML = generateCardInnerHTML({ name: text }, true);
       
-      setupItemDragEvents(newCard);
+      const safeId = getSafeId(categoryTitle);
+      let targetList = document.getElementById(safeId);
+      if (!targetList) {
+        renderList();
+        targetList = document.getElementById(safeId);
+      }
       targetList.appendChild(newCard);
-      
+      setupItemDragEvents(newCard);
+
       input.value = '';
       addBtn.disabled = true;
-      addBtn.textContent = "Fetching...";
+      addBtn.textContent = "Fetching OSM...";
       newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-      try {
-        const fetchedData = await fetchRestaurantData(text);
-        newCard.classList.remove('is-loading');
-        newCard.innerHTML = generateCardInnerHTML(fetchedData, false);
-      } catch (error) {
-        console.error("Error fetching restaurant data:", error);
-        newCard.classList.remove('is-loading');
-        newCard.innerHTML = generateCardInnerHTML({
-          name: text, note: "Error fetching data", loc: "N/A", hours: "N/A", phone: "N/A", rating: "N/A"
-        }, false);
-      } finally {
-        addBtn.disabled = false;
-        addBtn.textContent = "Add Item";
-      }
+      const fetchedData = await fetchRestaurantData(text);
+      targetCategory.items.push(fetchedData);
+      
+      newCard.classList.remove('is-loading');
+      newCard.innerHTML = generateCardInnerHTML(fetchedData, false);
+      
+      addBtn.disabled = false;
+      addBtn.textContent = "Add Item";
+      saveToStorage(); 
     }
 
-    // --- Drag and Drop Logic --- //
-
+    // --- Unified Drag and Drop Logic --- //
     function attachDragEvents() {
       const items = document.querySelectorAll('.rest-card');
       const lists = document.querySelectorAll('.sortable-list');
@@ -678,7 +966,57 @@
       item.addEventListener('dragstart', () => {
         setTimeout(() => item.classList.add('dragging'), 0);
       });
-      item.addEventListener('dragend', () => item.classList.remove('dragging'));
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        saveToStorage(); 
+      });
+
+      const handle = item.querySelector('.drag-handle');
+      if (handle) {
+        handle.addEventListener('touchstart', (e) => {
+          e.preventDefault(); 
+          item.classList.add('dragging');
+          if (navigator.vibrate) navigator.vibrate(50); 
+        }, { passive: false });
+
+        handle.addEventListener('touchmove', (e) => {
+          e.preventDefault(); 
+          const draggingItem = document.querySelector('.dragging');
+          if (!draggingItem) return;
+
+          const touch = e.touches[0];
+          const y = touch.clientY;
+
+          let targetList = null;
+          const lists = document.querySelectorAll('.sortable-list');
+          for (let list of lists) {
+            const rect = list.getBoundingClientRect();
+            if (y >= rect.top - 40 && y <= rect.bottom + 40) {
+              targetList = list;
+              break;
+            }
+          }
+
+          if (targetList) {
+            const afterElement = getDragAfterElement(targetList, y);
+            if (afterElement == null) {
+              targetList.appendChild(draggingItem);
+            } else {
+              targetList.insertBefore(draggingItem, afterElement);
+            }
+          }
+        }, { passive: false });
+
+        handle.addEventListener('touchend', () => {
+          item.classList.remove('dragging');
+          saveToStorage(); 
+        });
+
+        handle.addEventListener('touchcancel', () => {
+          item.classList.remove('dragging');
+          saveToStorage(); 
+        });
+      }
     }
 
     function setupListDragEvents(list) {
@@ -717,8 +1055,7 @@
     });
 
     window.onload = function() {
-      renderList();
-      populateDropdown();
+      initializeData();
     };
   </script>
 </body>
